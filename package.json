@@ -1,0 +1,25 @@
+{
+  "name": "apnileap",
+  "version": "1.0.0",
+  "description": "APNILEAP — Rule-Based Placement Eligibility and Performance Analytics",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "services/team-a-eligibility",
+    "services/team-b-ranking",
+    "services/team-c-placement",
+    "services/team-d-portal"
+  ],
+  "scripts": {
+    "start:all": "node scripts/start-all.js",
+    "seed": "node scripts/seed-data.js",
+    "health": "node scripts/health-check.js",
+    "start:a": "cd services/team-a-eligibility && npm start",
+    "start:b": "cd services/team-b-ranking && npm start",
+    "start:c": "cd services/team-c-placement && npm start",
+    "start:d": "cd services/team-d-portal && npm start",
+    "test:c": "cd services/team-c-placement && npm test"
+  },
+  "keywords": ["placement", "eligibility", "analytics", "academic"],
+  "license": "MIT"
+}

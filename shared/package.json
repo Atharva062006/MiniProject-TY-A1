@@ -1,0 +1,7 @@
+{
+  "name": "@apnileap/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities for APNILEAP services",
+  "main": "index.js",
+  "license": "MIT"
+}

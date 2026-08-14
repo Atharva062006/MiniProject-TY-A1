@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+npm-debug.log*
+data/tables/*.json
+data/wal/*.log
+data/backups/
+coverage/
+.DS_Store
+Thumbs.db

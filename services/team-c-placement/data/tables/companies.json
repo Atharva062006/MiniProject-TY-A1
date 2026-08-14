@@ -1,0 +1,20 @@
+{
+  "rows": {
+    "COM001": {
+      "company_id": "COM001",
+      "name": "TechCorp India",
+      "industry": "IT Services",
+      "website": "https://techcorp.in"
+    },
+    "COM002": {
+      "company_id": "COM002",
+      "name": "DataSoft",
+      "industry": "Analytics",
+      "website": "https://datasoft.io"
+    }
+  },
+  "meta": {
+    "count": 2,
+    "lastModified": "2026-08-14T07:28:53.870Z"
+  }
+}
