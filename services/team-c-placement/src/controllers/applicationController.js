@@ -26,6 +26,17 @@ class ApplicationController {
     }
   };
 
+  // GET /api/v1/applications
+  list = (req, res, next) => {
+    try {
+      const { student_id, drive_id, state } = req.query;
+      const apps = this.applicationService.listApplications({ student_id, drive_id, state });
+      sendSuccess(res, apps, req.correlationId);
+    } catch (err) {
+      next(err);
+    }
+  };
+
   // GET /api/v1/applications/:applicationId
   get = async (req, res, next) => {
     try {

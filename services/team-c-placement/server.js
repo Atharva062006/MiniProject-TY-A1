@@ -13,14 +13,16 @@ const RecoveryService = require('./src/services/recoveryService');
 
 // Controllers
 const ApplicationController = require('./src/controllers/applicationController');
-const OfferController = require('./src/controllers/offerController');
-const AuditController = require('./src/controllers/auditController');
-const ReportController = require('./src/controllers/reportController');
-const DriveController = require('./src/controllers/driveController');
-const StudentController = require('./src/controllers/studentController');
+const OfferController       = require('./src/controllers/offerController');
+const AuditController       = require('./src/controllers/auditController');
+const ReportController      = require('./src/controllers/reportController');
+const DriveController       = require('./src/controllers/driveController');
+const StudentController     = require('./src/controllers/studentController');
+const CompanyController     = require('./src/controllers/companyController');
 
 // Routes
 const buildRoutes = require('./src/routes');
+const sseService  = require('./src/services/sseService');
 
 async function startServer() {
   const app = express();
@@ -42,11 +44,12 @@ async function startServer() {
   // Initialize Controllers
   const controllers = {
     applicationController: new ApplicationController(applicationService),
-    offerController: new OfferController(offerService),
-    auditController: new AuditController(auditService),
-    reportController: new ReportController(reportService, recoveryService),
-    driveController: new DriveController(db),
-    studentController: new StudentController(db),
+    offerController:       new OfferController(offerService),
+    auditController:       new AuditController(auditService),
+    reportController:      new ReportController(reportService, recoveryService),
+    driveController:       new DriveController(db),
+    studentController:     new StudentController(db),
+    companyController:     new CompanyController(db),
   };
 
   // Mount Routes
@@ -66,6 +69,7 @@ async function startServer() {
     console.log('\n[Team C] Shutting down gracefully...');
     server.close();
     await db.shutdown();
+    sseService.shutdown();
     process.exit(0);
   };
   process.on('SIGINT', shutdown);

@@ -10,7 +10,7 @@ class StudentController {
   create = async (req, res, next) => {
     try {
       const studentId = uuidv4();
-      const student = { ...req.body, student_id: studentId, created_at: new Date().toISOString() };
+      const student = { student_id: studentId, ...req.body, created_at: new Date().toISOString() };
       const created = await this.db.table('students').insert(student);
       sendSuccess(res, created, req.correlationId, 201);
     } catch (err) {

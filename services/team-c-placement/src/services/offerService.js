@@ -58,7 +58,7 @@ class OfferService {
       };
       await txn.insert('eligibility_decisions', decisionId, decision);
 
-      // If SELECTED, claim a seat
+      // If SELECTED, claim a seat and create an offer record
       if (targetState === 'SELECTED') {
         const drive = await txn.read('drives', app.drive_id);
         if (drive.seats <= 0) {
@@ -75,6 +75,19 @@ class OfferService {
           status:         'PENDING',
           committed_at:   null,
         });
+      }
+
+      // If OFFER_ISSUED, mark the existing pending offer as COMMITTED
+      if (targetState === 'OFFER_ISSUED') {
+        const storage = this.db.storage || txn._storage;
+        // Use index to find the offer for this application
+        const allOffers = this.db.table('offers').find(o => o.application_id === applicationId && o.status === 'PENDING');
+        if (allOffers.length > 0) {
+          await txn.update('offers', allOffers[0].offer_id, {
+            status:       'COMMITTED',
+            committed_at: new Date().toISOString(),
+          });
+        }
       }
 
       // Transition application

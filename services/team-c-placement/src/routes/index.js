@@ -1,55 +1,83 @@
-const express = require('express');
+const express        = require('express');
 const { authMiddleware, requireRoles } = require('../middleware/auth');
-const { validateBody } = require('../middleware/validation');
+const { validateBody }  = require('../middleware/validation');
 const idempotencyMiddleware = require('../middleware/idempotency');
+const sseService     = require('../services/sseService');
 
 module.exports = (controllers, idempotencyService) => {
   const router = express.Router();
 
-  // Middleware setups
+  // Middleware setup
   const checkIdempotency = idempotencyMiddleware(idempotencyService);
 
-  // POST /api/v1/students
-  router.post('/students', validateBody({ name: 'string', email: 'string', branch: 'string', cgpa: 'number', backlogs: 'number' }), controllers.studentController.create);
+  // ── Companies (C1) ─────────────────────────────────────────────────────────
+  router.post('/companies',
+    validateBody({ name: 'string' }),
+    controllers.companyController.create
+  );
+  router.get('/companies',  controllers.companyController.list);
+  router.get('/companies/:companyId', controllers.companyController.get);
 
-  // GET /api/v1/drives
-  router.get('/drives', controllers.driveController.list);
+  // ── Students (C1) ──────────────────────────────────────────────────────────
+  router.post('/students',
+    validateBody({ name: 'string', email: 'string', branch: 'string', cgpa: 'number', backlogs: 'number' }),
+    controllers.studentController.create
+  );
 
-  // GET /api/v1/drives/:driveId/criteria
+  // ── Drives (C1) ────────────────────────────────────────────────────────────
+  router.post('/drives',
+    validateBody({ company_id: 'string', title: 'string', seats: 'number' }),
+    controllers.driveController.create
+  );
+  router.get('/drives',               controllers.driveController.list);
+  router.get('/drives/:driveId',      controllers.driveController.get);
   router.get('/drives/:driveId/criteria', controllers.driveController.getCriteria);
-
-  // PATCH /internal/v1/drives/:driveId
-  // In reality, protect this via internal network rules or specialized role
   router.patch('/internal/drives/:driveId', controllers.driveController.update);
 
-  // POST /api/v1/applications
-  router.post(
-    '/applications',
+  // ── Applications (C2) ──────────────────────────────────────────────────────
+  router.post('/applications',
     validateBody({ student_id: 'string', drive_id: 'string', consent: 'boolean', idempotency_key: 'string' }),
     checkIdempotency,
     controllers.applicationController.create
   );
-
-  // GET /api/v1/applications/:applicationId
+  router.get('/applications',             controllers.applicationController.list);
   router.get('/applications/:applicationId', controllers.applicationController.get);
+  router.post('/applications/:applicationId/withdraw',
+    authMiddleware,
+    controllers.applicationController.withdraw
+  );
 
-  // POST /api/v1/applications/:applicationId/withdraw
-  router.post('/applications/:applicationId/withdraw', authMiddleware, controllers.applicationController.withdraw);
+  // ── Offers / Commit (C3) ───────────────────────────────────────────────────
+  router.post('/internal/offers/commit',
+    validateBody({ application_id: 'string', decision_result: 'string', target_state: 'string', expected_version: 'number' }),
+    controllers.offerController.commit
+  );
+  router.post('/internal/offers/compensate',
+    validateBody({ application_id: 'string', reason: 'string' }),
+    controllers.offerController.compensate
+  );
 
-  // POST /internal/v1/offers/commit
-  router.post('/internal/offers/commit', validateBody({ application_id: 'string', decision_result: 'string', target_state: 'string', expected_version: 'number' }), controllers.offerController.commit);
+  // ── Audit (C4) ────────────────────────────────────────────────────────────
+  router.get('/audit',
+    authMiddleware,
+    requireRoles(['admin', 'auditor']),
+    controllers.auditController.query
+  );
 
-  // POST /internal/v1/offers/compensate
-  router.post('/internal/offers/compensate', validateBody({ application_id: 'string', reason: 'string' }), controllers.offerController.compensate);
+  // ── Reports (C4) ──────────────────────────────────────────────────────────
+  router.get('/reports/placement-performance',
+    authMiddleware,
+    requireRoles(['admin', 'faculty']),
+    controllers.reportController.getPlacementPerformance
+  );
 
-  // GET /api/v1/audit
-  router.get('/audit', authMiddleware, requireRoles(['admin', 'auditor']), controllers.auditController.query);
-
-  // GET /api/v1/reports/placement-performance
-  router.get('/reports/placement-performance', authMiddleware, requireRoles(['admin', 'faculty']), controllers.reportController.getPlacementPerformance);
-
-  // POST /internal/v1/recovery/verify
+  // ── Recovery (C4) ─────────────────────────────────────────────────────────
   router.post('/internal/recovery/verify', controllers.reportController.verifyRecovery);
+
+  // ── SSE Stream (C4 outbox) ─────────────────────────────────────────────────
+  // GET /api/v1/stream — Team D subscribes here for live state-change events.
+  // No auth guard so Team D dashboard can connect without a session cookie during dev.
+  router.get('/stream', (req, res) => sseService.subscribe(req, res));
 
   return router;
 };

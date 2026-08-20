@@ -10,6 +10,7 @@
  */
 
 const { v4: uuidv4 } = require('uuid');
+const sseService      = require('./sseService');
 
 class AuditService {
   /**
@@ -44,6 +45,18 @@ class AuditService {
       timestamp:      new Date().toISOString(),
     };
     await this.db.table('audit_log').insert(entry);
+
+    // Broadcast to all connected SSE clients (Team D live dashboard)
+    sseService.broadcast('audit', {
+      audit_id:       entry.audit_id,
+      actor:          entry.actor,
+      action:         entry.action,
+      table_name:     entry.table_name,
+      record_id:      entry.record_id,
+      correlation_id: entry.correlation_id,
+      timestamp:      entry.timestamp,
+    });
+
     return entry;
   }
 
