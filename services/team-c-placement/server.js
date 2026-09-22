@@ -10,6 +10,7 @@ const ApplicationService = require('./src/services/applicationService');
 const OfferService = require('./src/services/offerService');
 const ReportService = require('./src/services/reportService');
 const RecoveryService = require('./src/services/recoveryService');
+const AuthService = require('./src/services/authService');
 
 // Controllers
 const ApplicationController = require('./src/controllers/applicationController');
@@ -19,6 +20,7 @@ const ReportController      = require('./src/controllers/reportController');
 const DriveController       = require('./src/controllers/driveController');
 const StudentController     = require('./src/controllers/studentController');
 const CompanyController     = require('./src/controllers/companyController');
+const AuthController        = require('./src/controllers/authController');
 
 // Routes
 const buildRoutes = require('./src/routes');
@@ -40,6 +42,7 @@ async function startServer() {
   const offerService = new OfferService(db, auditService);
   const reportService = new ReportService(db);
   const recoveryService = new RecoveryService(db);
+  const authService = new AuthService(db, auditService);
 
   // Initialize Controllers
   const controllers = {
@@ -50,11 +53,17 @@ async function startServer() {
     driveController:       new DriveController(db),
     studentController:     new StudentController(db),
     companyController:     new CompanyController(db),
+    authController:        new AuthController(authService, db),
   };
 
   // Mount Routes
   app.use('/health', (req, res) => res.json({ service: 'team-c-placement', status: 'ok' }));
-  app.use('/api/v1', buildRoutes(controllers, idempotencyService)); // Also mounting /internal here for simplicity
+  const apiRoutes = buildRoutes(controllers, idempotencyService);
+  app.use('/api/v1', apiRoutes);
+  app.use('/internal/v1', (req, res, next) => {
+    req.url = '/internal' + req.url;
+    apiRoutes(req, res, next);
+  });
 
   // Error handling
   app.use(errorHandler);

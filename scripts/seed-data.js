@@ -20,7 +20,10 @@ async function seed() {
     { student_id: 'STU005', name: 'Eva Joshi',     email: 'eva@rit.edu',    branch: 'ENTC', cgpa: 8.2, backlogs: 0, attendance: 85, skills: ['Python', 'ML', 'TensorFlow'] },
   ];
   for (const s of students) {
-    await db.table('students').insert(s).catch(() => {});
+    const existing = db.table('students').findById(s.student_id);
+    if (!existing) {
+      await db.table('students').insert(s).catch(err => console.warn('Student seed warning:', s.student_id, err.message));
+    }
   }
 
   console.log('Seeding companies...');
@@ -29,7 +32,10 @@ async function seed() {
     { company_id: 'COM002', name: 'DataSoft',       industry: 'Analytics',   website: 'https://datasoft.io' },
   ];
   for (const c of companies) {
-    await db.table('companies').insert(c).catch(() => {});
+    const existing = db.table('companies').findById(c.company_id);
+    if (!existing) {
+      await db.table('companies').insert(c).catch(err => console.warn('Company seed warning:', c.company_id, err.message));
+    }
   }
 
   console.log('Seeding drives...');
@@ -46,10 +52,80 @@ async function seed() {
     },
   ];
   for (const d of drives) {
-    await db.table('drives').insert(d).catch(() => {});
+    const existing = db.table('drives').findById(d.drive_id);
+    if (!existing) {
+      await db.table('drives').insert(d).catch(err => console.warn('Drive seed warning:', d.drive_id, err.message));
+    }
   }
 
-  console.log('✅ Seed data loaded successfully.');
+  console.log('Seeding user accounts...');
+  const bcrypt = require('bcryptjs');
+  const studentSalt = await bcrypt.genSalt(10);
+  const defaultPasswordHash = await bcrypt.hash('password123', studentSalt);
+  const facultyPasswordHash = await bcrypt.hash('faculty123', studentSalt);
+  const adminPasswordHash   = await bcrypt.hash('admin123', studentSalt);
+
+  const users = [
+    {
+      user_id: 'USR-ALICE-001',
+      username: 'alice',
+      email: 'alice@rit.edu',
+      password_hash: defaultPasswordHash,
+      role: 'student',
+      student_id: 'STU001',
+      name: 'Alice Sharma',
+      created_at: new Date().toISOString(),
+    },
+    {
+      user_id: 'USR-BOB-002',
+      username: 'bob',
+      email: 'bob@rit.edu',
+      password_hash: defaultPasswordHash,
+      role: 'student',
+      student_id: 'STU002',
+      name: 'Bob Patil',
+      created_at: new Date().toISOString(),
+    },
+    {
+      user_id: 'USR-CAROL-003',
+      username: 'carol',
+      email: 'carol@rit.edu',
+      password_hash: defaultPasswordHash,
+      role: 'student',
+      student_id: 'STU003',
+      name: 'Carol Mehta',
+      created_at: new Date().toISOString(),
+    },
+    {
+      user_id: 'USR-FACULTY-001',
+      username: 'faculty',
+      email: 'faculty@rit.edu',
+      password_hash: facultyPasswordHash,
+      role: 'faculty',
+      student_id: null,
+      name: 'Prof. Deshmukh (T&P Coordinator)',
+      created_at: new Date().toISOString(),
+    },
+    {
+      user_id: 'USR-ADMIN-001',
+      username: 'admin',
+      email: 'admin@rit.edu',
+      password_hash: adminPasswordHash,
+      role: 'admin',
+      student_id: null,
+      name: 'Training & Placement Officer',
+      created_at: new Date().toISOString(),
+    },
+  ];
+
+  for (const u of users) {
+    const existing = db.table('users').findById(u.user_id);
+    if (!existing) {
+      await db.table('users').insert(u).catch(() => {});
+    }
+  }
+
+  console.log('Seed data loaded successfully.');
   process.exit(0);
 }
 

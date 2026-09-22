@@ -77,6 +77,16 @@ function errorHandler(err, req, res, next) {
       meta: { correlation_id: correlationId, timestamp: new Date().toISOString() },
     });
   }
+
+  const statusCode = err.statusCode || err.status || 500;
+  if (statusCode < 500) {
+    const code = err.code || (statusCode === 401 ? ERROR_CODES.UNAUTHORIZED : (statusCode === 403 ? ERROR_CODES.FORBIDDEN : ERROR_CODES.VALIDATION_ERROR));
+    return res.status(statusCode).json({
+      error: { code, message: err.message, details: err.details || [] },
+      meta: { correlation_id: correlationId, timestamp: new Date().toISOString() },
+    });
+  }
+
   console.error('[Unhandled]', err);
   return res.status(500).json({
     error: { code: ERROR_CODES.INTERNAL_ERROR, message: 'An unexpected error occurred', details: [] },

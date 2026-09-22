@@ -105,7 +105,7 @@ const SCHEMA = {
       offer_id:       { type: 'string',  notNull: true },
       application_id: { type: 'string',  notNull: true },  // FK -> applications
       drive_id:       { type: 'string',  notNull: true },  // FK -> drives
-      status:         { type: 'string',  notNull: true, enum: ['PENDING','COMMITTED','COMPENSATED'] },
+      status:         { type: 'string',  notNull: true, enum: ['PENDING','COMMITTED','COMPENSATED','ACCEPTED','DECLINED'] },
       committed_at:   { type: 'string',  notNull: false },
     },
     foreignKeys: [
@@ -137,6 +137,24 @@ const SCHEMA = {
       created_at: { type: 'string', notNull: false },
       expires_at: { type: 'string', notNull: false },
     },
+  },
+
+  users: {
+    primaryKey: 'user_id',
+    columns: {
+      user_id:       { type: 'string', notNull: true },
+      username:      { type: 'string', notNull: true },
+      email:         { type: 'string', notNull: true },
+      password_hash: { type: 'string', notNull: true },
+      role:          { type: 'string', notNull: true, enum: ['student', 'faculty', 'admin'] },
+      student_id:    { type: 'string', notNull: false },
+      name:          { type: 'string', notNull: true },
+      created_at:    { type: 'string', notNull: false },
+    },
+    unique: ['username', 'email'],
+    foreignKeys: [
+      { column: 'student_id', refTable: 'students', refColumn: 'student_id' },
+    ],
   },
 };
 

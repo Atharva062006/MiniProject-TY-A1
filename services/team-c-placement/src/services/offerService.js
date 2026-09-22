@@ -126,6 +126,20 @@ class OfferService {
        const app = await txn.read('applications', applicationId);
        if (!app) throw new NotFoundError('Application', applicationId);
 
+       // If seats were allocated (SELECTED or OFFER_ISSUED), restore the seat and compensate offer
+       if (['SELECTED', 'OFFER_ISSUED'].includes(app.state)) {
+         const drive = await txn.read('drives', app.drive_id);
+         if (drive) {
+           await txn.update('drives', app.drive_id, { seats: (drive.seats || 0) + 1 });
+         }
+         const allOffers = this.db.table('offers').find(o => o.application_id === applicationId);
+         for (const off of allOffers) {
+           if (['PENDING', 'COMMITTED'].includes(off.status)) {
+             await txn.update('offers', off.offer_id, { status: 'COMPENSATED' });
+           }
+         }
+       }
+
        const updatedApp = await txn.update('applications', applicationId, {
          state: 'COMPENSATION_REQUIRED',
          version: app.version + 1,
@@ -143,6 +157,86 @@ class OfferService {
          correlationId
        });
        return app;
+    });
+  }
+
+  /**
+   * Accept an issued offer (Student action).
+   */
+  async acceptOffer({ applicationId, correlationId, actor }) {
+    return this.db.transaction(async (txn) => {
+      const app = await txn.read('applications', applicationId);
+      if (!app) throw new NotFoundError('Application', applicationId);
+
+      const allOffers = this.db.table('offers').find(o => o.application_id === applicationId);
+      const activeOffer = allOffers.find(o => ['COMMITTED', 'PENDING'].includes(o.status));
+      if (!activeOffer) {
+        throw new ConflictError(`No pending or committed offer found for application '${applicationId}'`);
+      }
+
+      const updatedOffer = await txn.update('offers', activeOffer.offer_id, {
+        status: 'ACCEPTED',
+        committed_at: new Date().toISOString(),
+      });
+
+      return { application: app, offer: updatedOffer };
+    }).then(async (result) => {
+      await this.auditService.log({
+        actor,
+        action: 'OFFER_ACCEPTED',
+        tableName: 'offers',
+        recordId: result.offer.offer_id,
+        after: result.offer,
+        correlationId,
+      });
+      return result;
+    });
+  }
+
+  /**
+   * Decline an issued offer (Student action).
+   * Restores the seat to the drive and transitions the application to WITHDRAWN.
+   */
+  async declineOffer({ applicationId, correlationId, actor }) {
+    return this.db.transaction(async (txn) => {
+      const app = await txn.read('applications', applicationId);
+      if (!app) throw new NotFoundError('Application', applicationId);
+
+      const allOffers = this.db.table('offers').find(o => o.application_id === applicationId);
+      const activeOffer = allOffers.find(o => ['COMMITTED', 'PENDING'].includes(o.status));
+      if (!activeOffer) {
+        throw new ConflictError(`No pending or committed offer found for application '${applicationId}'`);
+      }
+
+      // Restore drive seat
+      const drive = await txn.read('drives', app.drive_id);
+      if (drive) {
+        await txn.update('drives', app.drive_id, { seats: (drive.seats || 0) + 1 });
+      }
+
+      // Update offer status
+      const updatedOffer = await txn.update('offers', activeOffer.offer_id, {
+        status: 'DECLINED',
+      });
+
+      // Transition application to WITHDRAWN
+      const updatedApp = await txn.update('applications', applicationId, {
+        state: 'WITHDRAWN',
+        version: app.version + 1,
+        updated_at: new Date().toISOString(),
+      });
+
+      return { application: updatedApp, offer: updatedOffer };
+    }).then(async (result) => {
+      await this.auditService.log({
+        actor,
+        action: 'OFFER_DECLINED',
+        tableName: 'offers',
+        recordId: result.offer.offer_id,
+        after: result.offer,
+        correlationId,
+      });
+      return result;
     });
   }
 }
