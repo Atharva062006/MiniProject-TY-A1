@@ -21,6 +21,9 @@ All routes are mounted under `/api/v1`. Internal routes (service-to-service) are
 - `GET    /api/v1/companies` — List all companies
 - `GET    /api/v1/companies/:companyId` — Get company by ID
 - `POST   /api/v1/students` — Create a student
+- `GET    /api/v1/students` — List all students
+- `GET    /api/v1/students/:studentId` — Get student by ID
+- `PUT    /api/v1/students/:studentId` — Update student profile credentials
 - `POST   /api/v1/drives` — Create a drive (requires `company_id`)
 - `GET    /api/v1/drives` — List drives (optional `?state=OPEN`)
 - `GET    /api/v1/drives/:driveId` — Get drive by ID
@@ -35,12 +38,20 @@ All routes are mounted under `/api/v1`. Internal routes (service-to-service) are
 
 ### Offers & Compensation (C3)
 - `POST   /api/v1/internal/offers/commit` — Atomically commit a state transition (with seat claim on SELECTED, offer commit on OFFER_ISSUED)
-- `POST   /api/v1/internal/offers/compensate` — Roll back a failed workflow step
+- `POST   /api/v1/internal/offers/compensate` — Roll back a failed workflow step (restores seats, marks offer COMPENSATED)
+- `POST   /api/v1/offers/accept` — Accept issued placement offer (marks offer ACCEPTED)
+- `POST   /api/v1/offers/decline` — Decline issued placement offer (marks offer DECLINED, restores drive seat, marks application WITHDRAWN)
 
 ### Audit, Reports & Recovery (C4)
 - `GET    /api/v1/audit` — Query append-only audit log (filter by correlation_id, record_id, date range)
 - `GET    /api/v1/reports/placement-performance` — Placement report with branch breakdown, package distribution, conversion rates
 - `POST   /api/v1/internal/recovery/verify` — Trigger WAL recovery verification
+
+### Authentication & Users (C5)
+- `POST   /api/v1/auth/register` — Register a student, faculty, or admin account with bcryptjs hash and JWT token
+- `POST   /api/v1/auth/login` — Authenticate username/email and password, receive signed JWT
+- `GET    /api/v1/auth/me` — Verify session token and retrieve linked profile
+- `GET    /api/v1/auth/users` — Admin inspection of registered users in custom DBMS
 
 ### SSE Event Stream (C4 Outbox)
 - `GET    /api/v1/stream` — Server-Sent Events stream. Emits `audit` events on every data mutation. Team D connects here for live dashboard updates.
@@ -59,4 +70,5 @@ Only Team C's `stateMachineService.js` enforces valid transitions. All other tea
 - `npm run start:c` — Start only Team C on port 3003.
 - `npm run seed` — Pre-populate DB with deterministic test data.
 - `npm run health` — Ping all 4 services.
+- `npm run test:e2e` — Automated cross-service end-to-end integration test.
 - Refer to `AI_DEVELOPMENT_GUIDE.md` and `RIT_Placement_Eligibility_System_Design_APIs_Sequences_KPIs by GSW.md` for full architectural constraints.

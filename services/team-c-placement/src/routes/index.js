@@ -23,6 +23,9 @@ module.exports = (controllers, idempotencyService) => {
     validateBody({ name: 'string', email: 'string', branch: 'string', cgpa: 'number', backlogs: 'number' }),
     controllers.studentController.create
   );
+  router.get('/students', controllers.studentController.list);
+  router.get('/students/:studentId', controllers.studentController.get);
+  router.put('/students/:studentId', controllers.studentController.update);
 
   // ── Drives (C1) ────────────────────────────────────────────────────────────
   router.post('/drives',
@@ -56,6 +59,14 @@ module.exports = (controllers, idempotencyService) => {
     validateBody({ application_id: 'string', reason: 'string' }),
     controllers.offerController.compensate
   );
+  router.post('/offers/accept',
+    validateBody({ application_id: 'string' }),
+    controllers.offerController.accept
+  );
+  router.post('/offers/decline',
+    validateBody({ application_id: 'string' }),
+    controllers.offerController.decline
+  );
 
   // ── Audit (C4) ────────────────────────────────────────────────────────────
   router.get('/audit',
@@ -73,6 +84,24 @@ module.exports = (controllers, idempotencyService) => {
 
   // ── Recovery (C4) ─────────────────────────────────────────────────────────
   router.post('/internal/recovery/verify', controllers.reportController.verifyRecovery);
+
+  // ── Authentication (Users & Accounts) ───────────────────────────────────────
+  if (controllers.authController) {
+    router.post('/auth/register',
+      validateBody({ username: 'string', email: 'string', password: 'string', name: 'string' }),
+      controllers.authController.register
+    );
+    router.post('/auth/login',
+      validateBody({ username: 'string', password: 'string' }),
+      controllers.authController.login
+    );
+    router.get('/auth/me', controllers.authController.me);
+    router.get('/auth/users',
+      authMiddleware,
+      requireRoles(['admin']),
+      controllers.authController.listUsers
+    );
+  }
 
   // ── SSE Stream (C4 outbox) ─────────────────────────────────────────────────
   // GET /api/v1/stream — Team D subscribes here for live state-change events.

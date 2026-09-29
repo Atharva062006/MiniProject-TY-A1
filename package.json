@@ -18,8 +18,18 @@
     "start:b": "cd services/team-b-ranking && npm start",
     "start:c": "cd services/team-c-placement && npm start",
     "start:d": "cd services/team-d-portal && npm start",
-    "test:c": "cd services/team-c-placement && npm test"
+    "test:c": "cd services/team-c-placement && npm test",
+    "test:e2e": "node scripts/e2e-integration-test.js"
   },
-  "keywords": ["placement", "eligibility", "analytics", "academic"],
-  "license": "MIT"
+  "keywords": [
+    "placement",
+    "eligibility",
+    "analytics",
+    "academic"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3"
+  }
 }

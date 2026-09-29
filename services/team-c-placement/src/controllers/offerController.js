@@ -47,6 +47,44 @@ class OfferController {
       next(err);
     }
   };
+
+  // POST /api/v1/offers/accept
+  accept = async (req, res, next) => {
+    try {
+      const { application_id } = req.body;
+      const correlationId = req.correlationId;
+      const actor = req.user ? (req.user.student_id || req.user.username || req.user.id) : 'student';
+
+      const result = await this.offerService.acceptOffer({
+        applicationId: application_id,
+        correlationId,
+        actor,
+      });
+
+      sendSuccess(res, result, correlationId, 200);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  // POST /api/v1/offers/decline
+  decline = async (req, res, next) => {
+    try {
+      const { application_id } = req.body;
+      const correlationId = req.correlationId;
+      const actor = req.user ? (req.user.student_id || req.user.username || req.user.id) : 'student';
+
+      const result = await this.offerService.declineOffer({
+        applicationId: application_id,
+        correlationId,
+        actor,
+      });
+
+      sendSuccess(res, result, correlationId, 200);
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 module.exports = OfferController;

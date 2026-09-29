@@ -1,19 +1,25 @@
 const express = require('express');
+const { correlationMiddleware } = require('../../shared/correlation');
+const { errorHandler } = require('../../shared/errors');
+const routes = require('./src/routes');
+
 const app = express();
 app.use(express.json());
+app.use(correlationMiddleware);
 
 // Health check
 app.get('/health', (req, res) => res.json({ service: 'team-a-eligibility', status: 'ok' }));
 
-// TODO: Team A — mount eligibility, queue, lock, metrics routes
-// const eligibilityRoutes = require('./src/routes/eligibility');
-// const internalRoutes   = require('./src/routes/internal');
-// const metricsRoutes    = require('./src/routes/metrics');
-// app.use('/api/v1', eligibilityRoutes);
-// app.use('/internal/v1', internalRoutes);
-// app.use('/api/v1/metrics', metricsRoutes);
+// Mount all Team A routes
+app.use(routes);
+
+// Centralized error handler
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Team A — Eligibility Engine running on port ${PORT}`));
+
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Team A — Eligibility Engine running on port ${PORT}`));
+}
 
 module.exports = app;

@@ -32,7 +32,8 @@ services/team-c-placement/
 │   │   ├── eligibility_decisions.json
 │   │   ├── offers.json
 │   │   ├── audit_log.json
-│   │   └── idempotency_keys.json
+│   │   ├── idempotency_keys.json
+│   │   └── users.json
 │   └── wal/                         # Write-Ahead Log archives
 └── src/
     ├── db/
@@ -51,6 +52,7 @@ services/team-c-placement/
     ├── services/
     │   ├── applicationService.js    # C2: create, get, withdraw, list, transitionState
     │   ├── auditService.js          # C4: append-only audit log + SSE broadcast
+    │   ├── authService.js           # C5: bcryptjs hashing, JWT generation & verification
     │   ├── idempotencyService.js    # Idempotency key store and lookup
     │   ├── offerService.js          # C3: commitOffer (SELECTED/OFFER_ISSUED), compensate
     │   ├── recoveryService.js       # C4: WAL recovery verification
@@ -60,15 +62,16 @@ services/team-c-placement/
     ├── controllers/
     │   ├── applicationController.js # create, list, get, withdraw
     │   ├── auditController.js       # query
+    │   ├── authController.js        # register, login, me, listUsers
     │   ├── companyController.js     # create, list, get
     │   ├── driveController.js       # create, list, get, getCriteria, update
     │   ├── offerController.js       # commit, compensate
     │   ├── reportController.js      # getPlacementPerformance, verifyRecovery
-    │   └── studentController.js     # create
+    │   └── studentController.js     # create, list, get
     ├── routes/
     │   └── index.js                 # All routes wired here
     └── middleware/
-        ├── auth.js                  # Auth + role guard (stub — wire real JWT for prod)
+        ├── auth.js                  # JWT Bearer verification + role guard
         ├── idempotency.js           # checkIdempotency middleware
         └── validation.js            # validateBody helper
 ```
@@ -77,21 +80,30 @@ services/team-c-placement/
 | Method | Endpoint | Notes |
 |--------|----------|-------|
 | `GET`   | `/health` | Health check |
+| `POST`  | `/api/v1/auth/register` | Register user (student/faculty/admin) with bcrypt hash & JWT |
+| `POST`  | `/api/v1/auth/login` | Authenticate username/password, returns JWT token |
+| `GET`   | `/api/v1/auth/me` | Validate session token & return profile |
+| `GET`   | `/api/v1/auth/users` | Admin user directory inspection |
 | `POST`  | `/api/v1/companies` | Create company |
 | `GET`   | `/api/v1/companies` | List companies |
 | `GET`   | `/api/v1/companies/:id` | Get company |
 | `POST`  | `/api/v1/students` | Create student |
-| `POST`  | `/api/v1/drives` | Create drive |
-| `GET`   | `/api/v1/drives` | List drives (`?state=OPEN`) |
+| `GET`   | `/api/v1/students` | List all students |
+| `GET`   | `/api/v1/students/:id` | Get student |
+| `PUT`   | `/api/v1/students/:id` | Update student profile |
+| `POST`  | `/api/v1/drives` | Create placement drive |
+| `GET`   | `/api/v1/drives` | List drives |
 | `GET`   | `/api/v1/drives/:id` | Get drive |
-| `GET`   | `/api/v1/drives/:id/criteria` | Get eligibility criteria |
+| `GET`   | `/api/v1/drives/:id/criteria` | Get drive criteria |
 | `PATCH` | `/api/v1/internal/drives/:id` | Update drive |
-| `POST`  | `/api/v1/applications` | Create application (idempotent) |
-| `GET`   | `/api/v1/applications` | List (`?student_id`, `?drive_id`, `?state`) |
+| `POST`  | `/api/v1/applications` | Apply to drive (idempotent) |
+| `GET`   | `/api/v1/applications` | List applications |
 | `GET`   | `/api/v1/applications/:id` | Get application |
 | `POST`  | `/api/v1/applications/:id/withdraw` | Withdraw |
 | `POST`  | `/api/v1/internal/offers/commit` | Commit state transition |
 | `POST`  | `/api/v1/internal/offers/compensate` | Compensate failed step |
+| `POST`  | `/api/v1/offers/accept` | Student accepts offer |
+| `POST`  | `/api/v1/offers/decline` | Student declines offer |
 | `GET`   | `/api/v1/audit` | Query audit log |
 | `GET`   | `/api/v1/reports/placement-performance` | Placement analytics |
 | `POST`  | `/api/v1/internal/recovery/verify` | WAL recovery check |
@@ -127,6 +139,7 @@ Alternative outcomes (terminal or re-entrant): `NOT_ELIGIBLE`, `WAITLISTED`, `WI
 *   `npm run seed`     - Pre-populates the database with deterministic test data.
 *   `npm run health`   - Pings all 4 services to ensure they are alive.
 *   `npm run test:c`   - Runs Team C's test suite.
+*   `npm run test:e2e` - Runs automated cross-service end-to-end integration test suite.
 
 ## 6. Idempotency & Concurrency
 

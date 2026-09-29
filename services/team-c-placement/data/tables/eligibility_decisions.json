@@ -1,7 +1,976 @@
 {
-  "rows": {},
+  "rows": {
+    "30905b52-2a6e-4eb6-a3e7-2a96e86792b0": {
+      "decision_id": "30905b52-2a6e-4eb6-a3e7-2a96e86792b0",
+      "application_id": "ee7e7d56-dce4-491e-a760-b8d1bc047ffd",
+      "result": "NOT_ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:50:26.403Z"
+    },
+    "5cb3ee94-6e89-415d-96e1-055787e06c86": {
+      "decision_id": "5cb3ee94-6e89-415d-96e1-055787e06c86",
+      "application_id": "ee7e7d56-dce4-491e-a760-b8d1bc047ffd",
+      "result": "NOT_ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:50:26.415Z"
+    },
+    "605fc6db-67a3-426b-9dc1-aaa2300209d7": {
+      "decision_id": "605fc6db-67a3-426b-9dc1-aaa2300209d7",
+      "application_id": "ee7e7d56-dce4-491e-a760-b8d1bc047ffd",
+      "result": "NOT_ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:50:26.424Z"
+    },
+    "2315c38e-c6c6-4ba3-97be-752696148d67": {
+      "decision_id": "2315c38e-c6c6-4ba3-97be-752696148d67",
+      "application_id": "06b79c1f-be49-44a3-a0fb-71eb019e1f95",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:53:35.454Z"
+    },
+    "fc726aa8-f45a-40f8-951a-7c435d4d6bc1": {
+      "decision_id": "fc726aa8-f45a-40f8-951a-7c435d4d6bc1",
+      "application_id": "06b79c1f-be49-44a3-a0fb-71eb019e1f95",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:53:35.465Z"
+    },
+    "8ab084a4-243e-4497-9341-48a238a3a65b": {
+      "decision_id": "8ab084a4-243e-4497-9341-48a238a3a65b",
+      "application_id": "06b79c1f-be49-44a3-a0fb-71eb019e1f95",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:53:35.475Z"
+    },
+    "30fc3b9f-3d5d-4f79-ab2e-c435e760028e": {
+      "decision_id": "30fc3b9f-3d5d-4f79-ab2e-c435e760028e",
+      "application_id": "c2ce716d-37e0-43c0-ace7-138f6adf4f1e",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:57:24.704Z"
+    },
+    "f307ff88-0f81-471e-b8c8-2cf84d65d774": {
+      "decision_id": "f307ff88-0f81-471e-b8c8-2cf84d65d774",
+      "application_id": "c2ce716d-37e0-43c0-ace7-138f6adf4f1e",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:57:24.714Z"
+    },
+    "beb2428e-4a01-46dd-9294-0a74c1915353": {
+      "decision_id": "beb2428e-4a01-46dd-9294-0a74c1915353",
+      "application_id": "c2ce716d-37e0-43c0-ace7-138f6adf4f1e",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T15:57:24.722Z"
+    },
+    "bd0891c8-0c26-469b-acaa-ce4f1a31f639": {
+      "decision_id": "bd0891c8-0c26-469b-acaa-ce4f1a31f639",
+      "application_id": "e7b27700-a17f-4108-8445-f0c7c9411f32",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:05:11.800Z"
+    },
+    "b69754f0-75c0-47e2-8710-02393bdbaa40": {
+      "decision_id": "b69754f0-75c0-47e2-8710-02393bdbaa40",
+      "application_id": "e7b27700-a17f-4108-8445-f0c7c9411f32",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:05:11.825Z"
+    },
+    "f00cb5ad-1bcf-4b15-993f-fb93885b656e": {
+      "decision_id": "f00cb5ad-1bcf-4b15-993f-fb93885b656e",
+      "application_id": "e7b27700-a17f-4108-8445-f0c7c9411f32",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:05:11.851Z"
+    },
+    "f0235127-b2e0-4885-b36f-c86a2da8b5f6": {
+      "decision_id": "f0235127-b2e0-4885-b36f-c86a2da8b5f6",
+      "application_id": "5fced237-8c96-4a0f-b2bf-9039c3bd7161",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:06:45.610Z"
+    },
+    "f4dadb62-9f88-42ce-8871-26fd5a22f623": {
+      "decision_id": "f4dadb62-9f88-42ce-8871-26fd5a22f623",
+      "application_id": "5fced237-8c96-4a0f-b2bf-9039c3bd7161",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:06:45.619Z"
+    },
+    "b4f70b51-d539-4ea5-a9ed-41bddd7fe232": {
+      "decision_id": "b4f70b51-d539-4ea5-a9ed-41bddd7fe232",
+      "application_id": "5fced237-8c96-4a0f-b2bf-9039c3bd7161",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:06:45.643Z"
+    },
+    "29621898-37e8-437d-80cd-ee07b9f98b03": {
+      "decision_id": "29621898-37e8-437d-80cd-ee07b9f98b03",
+      "application_id": "cd82aae1-dd46-4837-8575-26bad3df2a16",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:08:01.444Z"
+    },
+    "38538944-6e91-4e16-80b8-0120ce46146f": {
+      "decision_id": "38538944-6e91-4e16-80b8-0120ce46146f",
+      "application_id": "cd82aae1-dd46-4837-8575-26bad3df2a16",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:08:01.458Z"
+    },
+    "75e07fad-456d-4127-a0dd-1f4cafd2a818": {
+      "decision_id": "75e07fad-456d-4127-a0dd-1f4cafd2a818",
+      "application_id": "cd82aae1-dd46-4837-8575-26bad3df2a16",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:08:01.477Z"
+    },
+    "becf65a7-1edd-4555-b2c0-8cfcc5521151": {
+      "decision_id": "becf65a7-1edd-4555-b2c0-8cfcc5521151",
+      "application_id": "ce718455-68ef-4110-9f95-0ad50118ea25",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:12:23.402Z"
+    },
+    "6171abc3-818c-466a-a2f7-8882fe96af19": {
+      "decision_id": "6171abc3-818c-466a-a2f7-8882fe96af19",
+      "application_id": "ce718455-68ef-4110-9f95-0ad50118ea25",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:12:23.412Z"
+    },
+    "de85ad44-47cc-4648-a886-274c3f3a8214": {
+      "decision_id": "de85ad44-47cc-4648-a886-274c3f3a8214",
+      "application_id": "ce718455-68ef-4110-9f95-0ad50118ea25",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-17T16:12:23.420Z"
+    },
+    "288ee437-a17c-4c69-88c9-5fb92f5426a9": {
+      "decision_id": "288ee437-a17c-4c69-88c9-5fb92f5426a9",
+      "application_id": "fd9846db-77df-44ad-8c90-d48779c6d489",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:26:14.851Z"
+    },
+    "5cd03bea-4955-4210-af3e-fb031977bdcb": {
+      "decision_id": "5cd03bea-4955-4210-af3e-fb031977bdcb",
+      "application_id": "fd9846db-77df-44ad-8c90-d48779c6d489",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:26:14.860Z"
+    },
+    "1bd023c8-a232-417b-b9b8-d1395606483c": {
+      "decision_id": "1bd023c8-a232-417b-b9b8-d1395606483c",
+      "application_id": "fd9846db-77df-44ad-8c90-d48779c6d489",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:26:14.867Z"
+    },
+    "8e6c10db-1599-4c22-8bfc-dd4ebaa079fa": {
+      "decision_id": "8e6c10db-1599-4c22-8bfc-dd4ebaa079fa",
+      "application_id": "35513a25-1835-4938-92a4-a5c112c905a3",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:32:51.863Z"
+    },
+    "2f92cee5-af19-45d1-8e99-4a0a9c66cb79": {
+      "decision_id": "2f92cee5-af19-45d1-8e99-4a0a9c66cb79",
+      "application_id": "35513a25-1835-4938-92a4-a5c112c905a3",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:32:51.876Z"
+    },
+    "2ad67287-c6e9-4597-b2ae-0f91f63a3b94": {
+      "decision_id": "2ad67287-c6e9-4597-b2ae-0f91f63a3b94",
+      "application_id": "35513a25-1835-4938-92a4-a5c112c905a3",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:32:51.887Z"
+    },
+    "1d1a9596-db60-4ac5-8934-c30c5eaada6d": {
+      "decision_id": "1d1a9596-db60-4ac5-8934-c30c5eaada6d",
+      "application_id": "b2603e5d-ab4b-4dc9-a59f-334c685ccb33",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:32:52.253Z"
+    },
+    "b104fea8-254c-47e6-a5ce-b0b51804332a": {
+      "decision_id": "b104fea8-254c-47e6-a5ce-b0b51804332a",
+      "application_id": "b2603e5d-ab4b-4dc9-a59f-334c685ccb33",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:32:52.263Z"
+    },
+    "fa7dd918-9e7b-40d5-a336-01f3aa51ebc9": {
+      "decision_id": "fa7dd918-9e7b-40d5-a336-01f3aa51ebc9",
+      "application_id": "b2603e5d-ab4b-4dc9-a59f-334c685ccb33",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:32:52.273Z"
+    },
+    "fcc62162-c61b-40e5-a431-26973a2227b4": {
+      "decision_id": "fcc62162-c61b-40e5-a431-26973a2227b4",
+      "application_id": "bce1550c-68eb-4425-b912-d4b5b016b246",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:37:57.593Z"
+    },
+    "453ec6a8-06bf-455f-b36a-2e8efdc9fda9": {
+      "decision_id": "453ec6a8-06bf-455f-b36a-2e8efdc9fda9",
+      "application_id": "bce1550c-68eb-4425-b912-d4b5b016b246",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:37:57.602Z"
+    },
+    "94d78e34-3693-4920-acde-2fd2e89e14a8": {
+      "decision_id": "94d78e34-3693-4920-acde-2fd2e89e14a8",
+      "application_id": "bce1550c-68eb-4425-b912-d4b5b016b246",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T10:37:57.610Z"
+    },
+    "91e79044-be6f-4235-9608-764decc80655": {
+      "decision_id": "91e79044-be6f-4235-9608-764decc80655",
+      "application_id": "f3c6be9f-70e9-40c1-a3c6-96935454d187",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T11:55:27.509Z"
+    },
+    "c958c5e4-b4cf-4003-8bb5-2b296c3c0ffa": {
+      "decision_id": "c958c5e4-b4cf-4003-8bb5-2b296c3c0ffa",
+      "application_id": "f3c6be9f-70e9-40c1-a3c6-96935454d187",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T11:55:27.516Z"
+    },
+    "62db807c-2304-4ab1-8ecd-20284f095533": {
+      "decision_id": "62db807c-2304-4ab1-8ecd-20284f095533",
+      "application_id": "f3c6be9f-70e9-40c1-a3c6-96935454d187",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T11:55:27.538Z"
+    },
+    "8f8f1556-e7d4-4812-80c1-7c862be5b017": {
+      "decision_id": "8f8f1556-e7d4-4812-80c1-7c862be5b017",
+      "application_id": "41c65a9f-2b97-4749-8720-8f4653d36dc4",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:04:10.427Z"
+    },
+    "074f1bab-c842-402b-8318-5f4064a7c68a": {
+      "decision_id": "074f1bab-c842-402b-8318-5f4064a7c68a",
+      "application_id": "41c65a9f-2b97-4749-8720-8f4653d36dc4",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:04:10.448Z"
+    },
+    "8e542ca5-82b1-4873-8608-9dc3eefb7382": {
+      "decision_id": "8e542ca5-82b1-4873-8608-9dc3eefb7382",
+      "application_id": "41c65a9f-2b97-4749-8720-8f4653d36dc4",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:04:10.460Z"
+    },
+    "b434da7c-94a6-4f58-81ad-f82e5c091e14": {
+      "decision_id": "b434da7c-94a6-4f58-81ad-f82e5c091e14",
+      "application_id": "5f04519f-dc81-4781-92ea-5c1f95753fcb",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:04:10.894Z"
+    },
+    "6ef4d643-48dd-46a6-bd24-a1a73adb23a4": {
+      "decision_id": "6ef4d643-48dd-46a6-bd24-a1a73adb23a4",
+      "application_id": "5f04519f-dc81-4781-92ea-5c1f95753fcb",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:04:10.904Z"
+    },
+    "cdfed9e8-3058-4594-920b-da7a48eddeba": {
+      "decision_id": "cdfed9e8-3058-4594-920b-da7a48eddeba",
+      "application_id": "5f04519f-dc81-4781-92ea-5c1f95753fcb",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:04:10.914Z"
+    },
+    "607a0129-1c76-47de-9ebe-3b3f34c26f37": {
+      "decision_id": "607a0129-1c76-47de-9ebe-3b3f34c26f37",
+      "application_id": "f2f026e7-dce7-439e-8361-6ebaa24cbd5c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:13:37.131Z"
+    },
+    "7c4fc8cd-9436-4404-bfd1-085f57337575": {
+      "decision_id": "7c4fc8cd-9436-4404-bfd1-085f57337575",
+      "application_id": "f2f026e7-dce7-439e-8361-6ebaa24cbd5c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:13:37.140Z"
+    },
+    "b9e962dc-ecc5-4b0c-9ddf-bd7a1ba8f612": {
+      "decision_id": "b9e962dc-ecc5-4b0c-9ddf-bd7a1ba8f612",
+      "application_id": "f2f026e7-dce7-439e-8361-6ebaa24cbd5c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:13:37.170Z"
+    },
+    "c9e7fe8f-f7ae-43d6-8547-814618177b5f": {
+      "decision_id": "c9e7fe8f-f7ae-43d6-8547-814618177b5f",
+      "application_id": "1d7d018b-78ef-42f0-a8e4-09c69d8ebed5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:13:37.607Z"
+    },
+    "cfcda732-e138-4ee4-a1b6-e31afc82bf74": {
+      "decision_id": "cfcda732-e138-4ee4-a1b6-e31afc82bf74",
+      "application_id": "1d7d018b-78ef-42f0-a8e4-09c69d8ebed5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:13:37.622Z"
+    },
+    "e796f1ee-cb7a-4def-a238-d898a7ec8120": {
+      "decision_id": "e796f1ee-cb7a-4def-a238-d898a7ec8120",
+      "application_id": "1d7d018b-78ef-42f0-a8e4-09c69d8ebed5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:13:37.638Z"
+    },
+    "e5ad9376-8f26-4f21-90b5-1a754c458123": {
+      "decision_id": "e5ad9376-8f26-4f21-90b5-1a754c458123",
+      "application_id": "05d69cfe-bf69-407b-b2e4-1a2a82598aba",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:16:09.170Z"
+    },
+    "fdaa0082-b504-4303-a60c-d3daa734c614": {
+      "decision_id": "fdaa0082-b504-4303-a60c-d3daa734c614",
+      "application_id": "05d69cfe-bf69-407b-b2e4-1a2a82598aba",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:16:09.186Z"
+    },
+    "65eaebc4-f2f3-462d-bb9d-9e05e54cea72": {
+      "decision_id": "65eaebc4-f2f3-462d-bb9d-9e05e54cea72",
+      "application_id": "05d69cfe-bf69-407b-b2e4-1a2a82598aba",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:16:09.200Z"
+    },
+    "bf0a2407-00bd-48a3-8f98-4339b708af89": {
+      "decision_id": "bf0a2407-00bd-48a3-8f98-4339b708af89",
+      "application_id": "c4a44ddc-aaa4-4671-81d3-d54720cddc46",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:16:09.720Z"
+    },
+    "40c9592a-ad1c-44e9-ad6d-3cd6eee7ed86": {
+      "decision_id": "40c9592a-ad1c-44e9-ad6d-3cd6eee7ed86",
+      "application_id": "c4a44ddc-aaa4-4671-81d3-d54720cddc46",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:16:09.737Z"
+    },
+    "89ebb72d-8d2f-4d7f-a6fb-bb1342d447b8": {
+      "decision_id": "89ebb72d-8d2f-4d7f-a6fb-bb1342d447b8",
+      "application_id": "c4a44ddc-aaa4-4671-81d3-d54720cddc46",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:16:09.749Z"
+    },
+    "50edb13e-ff0e-4a93-b72e-cf6d73647ad5": {
+      "decision_id": "50edb13e-ff0e-4a93-b72e-cf6d73647ad5",
+      "application_id": "baf61ae5-26d2-4033-9ebc-4e530553f08c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:23:37.099Z"
+    },
+    "edcff920-c914-4f20-b869-b5ef4d345c8d": {
+      "decision_id": "edcff920-c914-4f20-b869-b5ef4d345c8d",
+      "application_id": "baf61ae5-26d2-4033-9ebc-4e530553f08c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:23:37.109Z"
+    },
+    "a58effbc-2242-4bbd-9e74-cae8c6936dba": {
+      "decision_id": "a58effbc-2242-4bbd-9e74-cae8c6936dba",
+      "application_id": "baf61ae5-26d2-4033-9ebc-4e530553f08c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:23:37.118Z"
+    },
+    "47691bb3-37bb-489f-89bc-151f8608bd2e": {
+      "decision_id": "47691bb3-37bb-489f-89bc-151f8608bd2e",
+      "application_id": "44586aed-3b9f-40b4-b547-c356ec2a67c4",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:23:37.496Z"
+    },
+    "8990ce2a-a620-462f-a2d6-d47624134884": {
+      "decision_id": "8990ce2a-a620-462f-a2d6-d47624134884",
+      "application_id": "44586aed-3b9f-40b4-b547-c356ec2a67c4",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:23:37.506Z"
+    },
+    "70227c1f-ed30-45bf-bb46-bf202d57aa50": {
+      "decision_id": "70227c1f-ed30-45bf-bb46-bf202d57aa50",
+      "application_id": "44586aed-3b9f-40b4-b547-c356ec2a67c4",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:23:37.518Z"
+    },
+    "29d78a23-4a3e-4dc9-8465-45d6e97fa0c9": {
+      "decision_id": "29d78a23-4a3e-4dc9-8465-45d6e97fa0c9",
+      "application_id": "baf61ae5-26d2-4033-9ebc-4e530553f08c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_8b57de87-418c-4210-83a7-b025851f77d1",
+      "created_at": "2026-09-22T12:23:37.714Z"
+    },
+    "4fd95119-177a-4d0a-96d4-f751964cfe0c": {
+      "decision_id": "4fd95119-177a-4d0a-96d4-f751964cfe0c",
+      "application_id": "81b9c1bb-47f5-446c-ab4d-164d79a269b5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:25:41.419Z"
+    },
+    "7dac9f8e-f1b9-40c6-a549-0efbd06aa95b": {
+      "decision_id": "7dac9f8e-f1b9-40c6-a549-0efbd06aa95b",
+      "application_id": "81b9c1bb-47f5-446c-ab4d-164d79a269b5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:25:41.428Z"
+    },
+    "deea63c4-8690-4818-b6a6-7810bc63f363": {
+      "decision_id": "deea63c4-8690-4818-b6a6-7810bc63f363",
+      "application_id": "81b9c1bb-47f5-446c-ab4d-164d79a269b5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:25:41.435Z"
+    },
+    "1f6dbb76-b301-42eb-a111-f590fdf1d8af": {
+      "decision_id": "1f6dbb76-b301-42eb-a111-f590fdf1d8af",
+      "application_id": "e4bece87-73d4-4524-bf48-3a9f7a71d980",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:25:41.943Z"
+    },
+    "3f8a05b4-1dd6-4cb1-b10d-13ba67a99beb": {
+      "decision_id": "3f8a05b4-1dd6-4cb1-b10d-13ba67a99beb",
+      "application_id": "e4bece87-73d4-4524-bf48-3a9f7a71d980",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:25:41.953Z"
+    },
+    "26cf551d-8fd6-498d-9726-8b562a1d3e3d": {
+      "decision_id": "26cf551d-8fd6-498d-9726-8b562a1d3e3d",
+      "application_id": "e4bece87-73d4-4524-bf48-3a9f7a71d980",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:25:41.961Z"
+    },
+    "f87edca9-1583-43b5-a692-fc2f566db96d": {
+      "decision_id": "f87edca9-1583-43b5-a692-fc2f566db96d",
+      "application_id": "81b9c1bb-47f5-446c-ab4d-164d79a269b5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_ec2db39b-0c76-4022-a107-2ca959485da4",
+      "created_at": "2026-09-22T12:25:42.143Z"
+    },
+    "94b52a73-eac4-43a7-a66e-f29c008031ee": {
+      "decision_id": "94b52a73-eac4-43a7-a66e-f29c008031ee",
+      "application_id": "2f6fb7ab-8d20-439f-98ee-7ff9f1e6b878",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:26:39.511Z"
+    },
+    "e0f9b994-5440-4a7a-b558-2824f05abc9a": {
+      "decision_id": "e0f9b994-5440-4a7a-b558-2824f05abc9a",
+      "application_id": "2f6fb7ab-8d20-439f-98ee-7ff9f1e6b878",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:26:39.526Z"
+    },
+    "ea742653-4274-4a95-b926-6ff4adc91bdf": {
+      "decision_id": "ea742653-4274-4a95-b926-6ff4adc91bdf",
+      "application_id": "2f6fb7ab-8d20-439f-98ee-7ff9f1e6b878",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:26:39.535Z"
+    },
+    "71794436-ef44-45a4-85e0-ee849c86bb31": {
+      "decision_id": "71794436-ef44-45a4-85e0-ee849c86bb31",
+      "application_id": "6dc9e87c-9604-401e-a128-e73425ea6d44",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:26:39.976Z"
+    },
+    "4d9cb382-7489-4eee-9904-cabb35ef9111": {
+      "decision_id": "4d9cb382-7489-4eee-9904-cabb35ef9111",
+      "application_id": "6dc9e87c-9604-401e-a128-e73425ea6d44",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:26:39.988Z"
+    },
+    "68a7aae2-e4aa-4587-9fbf-c57a45c5c17f": {
+      "decision_id": "68a7aae2-e4aa-4587-9fbf-c57a45c5c17f",
+      "application_id": "6dc9e87c-9604-401e-a128-e73425ea6d44",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:26:39.998Z"
+    },
+    "1ba71aaa-16e4-41ca-88f7-59f6b4a0a249": {
+      "decision_id": "1ba71aaa-16e4-41ca-88f7-59f6b4a0a249",
+      "application_id": "2f6fb7ab-8d20-439f-98ee-7ff9f1e6b878",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_f3a14e64-7f88-4b66-af91-592576986b64",
+      "created_at": "2026-09-22T12:26:40.182Z"
+    },
+    "6f831ea7-09ac-4bb5-9238-e1c6c9158547": {
+      "decision_id": "6f831ea7-09ac-4bb5-9238-e1c6c9158547",
+      "application_id": "2f6fb7ab-8d20-439f-98ee-7ff9f1e6b878",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:26:40.207Z"
+    },
+    "792fffd7-0a39-4c07-b047-8049a0ebd61b": {
+      "decision_id": "792fffd7-0a39-4c07-b047-8049a0ebd61b",
+      "application_id": "2f6fb7ab-8d20-439f-98ee-7ff9f1e6b878",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:26:40.230Z"
+    },
+    "e45dada6-23a6-4197-bd05-520eaff97ebc": {
+      "decision_id": "e45dada6-23a6-4197-bd05-520eaff97ebc",
+      "application_id": "03c717a3-a6b6-4afa-96b7-b9c964104d6c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:06.371Z"
+    },
+    "d489a2fe-7578-4dc3-800d-711ce900c397": {
+      "decision_id": "d489a2fe-7578-4dc3-800d-711ce900c397",
+      "application_id": "03c717a3-a6b6-4afa-96b7-b9c964104d6c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:06.394Z"
+    },
+    "95a579e2-9b72-4617-86ee-185fd9d0f1ed": {
+      "decision_id": "95a579e2-9b72-4617-86ee-185fd9d0f1ed",
+      "application_id": "03c717a3-a6b6-4afa-96b7-b9c964104d6c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:06.415Z"
+    },
+    "81735c2b-262f-4f4e-94c4-55a14f162737": {
+      "decision_id": "81735c2b-262f-4f4e-94c4-55a14f162737",
+      "application_id": "4969cc9c-bb17-46ec-a723-131380207fc2",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.003Z"
+    },
+    "9efa60eb-7416-4bec-84df-bca7f08d80cb": {
+      "decision_id": "9efa60eb-7416-4bec-84df-bca7f08d80cb",
+      "application_id": "4969cc9c-bb17-46ec-a723-131380207fc2",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.024Z"
+    },
+    "cc265a27-cb8b-4bc8-8fc7-a5eeeecc15ed": {
+      "decision_id": "cc265a27-cb8b-4bc8-8fc7-a5eeeecc15ed",
+      "application_id": "4969cc9c-bb17-46ec-a723-131380207fc2",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.042Z"
+    },
+    "cf90d037-9989-4b04-b97d-00f506026e7a": {
+      "decision_id": "cf90d037-9989-4b04-b97d-00f506026e7a",
+      "application_id": "03c717a3-a6b6-4afa-96b7-b9c964104d6c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_c7e87070-24c6-41e0-a354-80010fb76a44",
+      "created_at": "2026-09-22T12:29:07.318Z"
+    },
+    "024ce658-7c79-488f-b778-40cd6570116d": {
+      "decision_id": "024ce658-7c79-488f-b778-40cd6570116d",
+      "application_id": "03c717a3-a6b6-4afa-96b7-b9c964104d6c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.359Z"
+    },
+    "4f279487-51f7-4d04-a593-9fc89d5eda2d": {
+      "decision_id": "4f279487-51f7-4d04-a593-9fc89d5eda2d",
+      "application_id": "03c717a3-a6b6-4afa-96b7-b9c964104d6c",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.404Z"
+    },
+    "d817ce1d-9d77-4cd0-aa11-d3a5fe7aa4b6": {
+      "decision_id": "d817ce1d-9d77-4cd0-aa11-d3a5fe7aa4b6",
+      "application_id": "b77cddb2-e02f-4a41-9cd2-dbc9f3c27232",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.482Z"
+    },
+    "5231460b-f5b5-4ffe-a76d-ac200bbbc29d": {
+      "decision_id": "5231460b-f5b5-4ffe-a76d-ac200bbbc29d",
+      "application_id": "b77cddb2-e02f-4a41-9cd2-dbc9f3c27232",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.501Z"
+    },
+    "0ede497c-d64e-49ac-b130-5094a532d0ee": {
+      "decision_id": "0ede497c-d64e-49ac-b130-5094a532d0ee",
+      "application_id": "b77cddb2-e02f-4a41-9cd2-dbc9f3c27232",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.518Z"
+    },
+    "14e54048-868e-4695-8d41-ab99b2735e7b": {
+      "decision_id": "14e54048-868e-4695-8d41-ab99b2735e7b",
+      "application_id": "b77cddb2-e02f-4a41-9cd2-dbc9f3c27232",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_e590cbd4-3314-477d-a38f-ba4379a9737b",
+      "created_at": "2026-09-22T12:29:07.552Z"
+    },
+    "fea9b212-eb88-499e-8a88-dd2c13d19a13": {
+      "decision_id": "fea9b212-eb88-499e-8a88-dd2c13d19a13",
+      "application_id": "b77cddb2-e02f-4a41-9cd2-dbc9f3c27232",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:29:07.594Z"
+    },
+    "830d9c83-4f8a-4abc-9b1d-1db183c2be4d": {
+      "decision_id": "830d9c83-4f8a-4abc-9b1d-1db183c2be4d",
+      "application_id": "f4ccec01-0f45-496c-b530-1812036894f5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:49.682Z"
+    },
+    "3597cf94-0e32-4c31-9ce3-7a5d0520b1c4": {
+      "decision_id": "3597cf94-0e32-4c31-9ce3-7a5d0520b1c4",
+      "application_id": "f4ccec01-0f45-496c-b530-1812036894f5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:49.690Z"
+    },
+    "bfc5d5f4-c2db-4a50-9566-397f980137d0": {
+      "decision_id": "bfc5d5f4-c2db-4a50-9566-397f980137d0",
+      "application_id": "f4ccec01-0f45-496c-b530-1812036894f5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:49.697Z"
+    },
+    "f04378ca-a4a5-4292-b1ea-8fa2a1134846": {
+      "decision_id": "f04378ca-a4a5-4292-b1ea-8fa2a1134846",
+      "application_id": "6b408bfa-31f4-4c47-b53c-13480b86a19a",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.071Z"
+    },
+    "8fcf7357-780a-4365-9bef-78a494f9d6a4": {
+      "decision_id": "8fcf7357-780a-4365-9bef-78a494f9d6a4",
+      "application_id": "6b408bfa-31f4-4c47-b53c-13480b86a19a",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.080Z"
+    },
+    "4c0997e8-6c1d-4e68-af9c-20c45acd0068": {
+      "decision_id": "4c0997e8-6c1d-4e68-af9c-20c45acd0068",
+      "application_id": "6b408bfa-31f4-4c47-b53c-13480b86a19a",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.091Z"
+    },
+    "ae9d4ea1-37cf-4600-ac8f-40d72f1d259b": {
+      "decision_id": "ae9d4ea1-37cf-4600-ac8f-40d72f1d259b",
+      "application_id": "f4ccec01-0f45-496c-b530-1812036894f5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_0172f8bb-8187-44b5-a6d2-63301067a5e2",
+      "created_at": "2026-09-22T12:52:50.270Z"
+    },
+    "34643cbd-35e9-4de9-bfdc-84481797d4aa": {
+      "decision_id": "34643cbd-35e9-4de9-bfdc-84481797d4aa",
+      "application_id": "f4ccec01-0f45-496c-b530-1812036894f5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.293Z"
+    },
+    "65d45e36-befb-410f-ae1f-3e31270a7d52": {
+      "decision_id": "65d45e36-befb-410f-ae1f-3e31270a7d52",
+      "application_id": "f4ccec01-0f45-496c-b530-1812036894f5",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.308Z"
+    },
+    "4373e154-c9ce-49cd-b2a0-a1040951fb05": {
+      "decision_id": "4373e154-c9ce-49cd-b2a0-a1040951fb05",
+      "application_id": "2d90bfd5-9f44-4118-94ec-eba44753320b",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.346Z"
+    },
+    "3b002c34-592b-4397-a7bb-466df960d52d": {
+      "decision_id": "3b002c34-592b-4397-a7bb-466df960d52d",
+      "application_id": "2d90bfd5-9f44-4118-94ec-eba44753320b",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.354Z"
+    },
+    "734acf9f-6b63-4b85-a2e8-69deb776b1eb": {
+      "decision_id": "734acf9f-6b63-4b85-a2e8-69deb776b1eb",
+      "application_id": "2d90bfd5-9f44-4118-94ec-eba44753320b",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.361Z"
+    },
+    "54496e3b-1f44-4dbd-871e-c695cfb38c05": {
+      "decision_id": "54496e3b-1f44-4dbd-871e-c695cfb38c05",
+      "application_id": "2d90bfd5-9f44-4118-94ec-eba44753320b",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_111d1ce5-be99-407b-a118-8a8d7843f422",
+      "created_at": "2026-09-22T12:52:50.383Z"
+    },
+    "3b264283-1617-482a-9c40-531ba05274e7": {
+      "decision_id": "3b264283-1617-482a-9c40-531ba05274e7",
+      "application_id": "2d90bfd5-9f44-4118-94ec-eba44753320b",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:52:50.397Z"
+    },
+    "5e384aa9-86b3-4dfb-9f59-657ff8de1023": {
+      "decision_id": "5e384aa9-86b3-4dfb-9f59-657ff8de1023",
+      "application_id": "1e707b48-29ec-4cc7-a9c5-601553f18633",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:17.887Z"
+    },
+    "6f7737db-54db-48fb-9e14-109104577c40": {
+      "decision_id": "6f7737db-54db-48fb-9e14-109104577c40",
+      "application_id": "1e707b48-29ec-4cc7-a9c5-601553f18633",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:17.898Z"
+    },
+    "9ec96bb2-284e-4107-80ce-474eedcf7bbf": {
+      "decision_id": "9ec96bb2-284e-4107-80ce-474eedcf7bbf",
+      "application_id": "1e707b48-29ec-4cc7-a9c5-601553f18633",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:17.907Z"
+    },
+    "f5a28fd2-7e6a-42b9-baa2-f91076e84e26": {
+      "decision_id": "f5a28fd2-7e6a-42b9-baa2-f91076e84e26",
+      "application_id": "e3a47f07-237d-46e7-ae51-688ef3846d68",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.294Z"
+    },
+    "6dd63179-822c-415c-96f6-d9bdfd512316": {
+      "decision_id": "6dd63179-822c-415c-96f6-d9bdfd512316",
+      "application_id": "e3a47f07-237d-46e7-ae51-688ef3846d68",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.302Z"
+    },
+    "a503bb5a-7ce0-4ccd-adca-414e67a70b33": {
+      "decision_id": "a503bb5a-7ce0-4ccd-adca-414e67a70b33",
+      "application_id": "e3a47f07-237d-46e7-ae51-688ef3846d68",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.310Z"
+    },
+    "338b29fc-9a9a-4b07-811d-5be7efaf3081": {
+      "decision_id": "338b29fc-9a9a-4b07-811d-5be7efaf3081",
+      "application_id": "1e707b48-29ec-4cc7-a9c5-601553f18633",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_6d116673-b7bd-4dba-ae83-2705b39a3080",
+      "created_at": "2026-09-22T12:55:18.471Z"
+    },
+    "7bfe07c7-ea44-42e9-af75-1d2d10924ecf": {
+      "decision_id": "7bfe07c7-ea44-42e9-af75-1d2d10924ecf",
+      "application_id": "1e707b48-29ec-4cc7-a9c5-601553f18633",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.494Z"
+    },
+    "05069813-c0fd-41f8-bedb-c421dc211936": {
+      "decision_id": "05069813-c0fd-41f8-bedb-c421dc211936",
+      "application_id": "1e707b48-29ec-4cc7-a9c5-601553f18633",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.510Z"
+    },
+    "2c7d0653-4a00-467d-81b6-880be898a01b": {
+      "decision_id": "2c7d0653-4a00-467d-81b6-880be898a01b",
+      "application_id": "0c6fa55a-7fe8-41e6-b65a-c217a6b3dff3",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.548Z"
+    },
+    "b5a96cf6-e974-4724-95e8-c1981c36a8ef": {
+      "decision_id": "b5a96cf6-e974-4724-95e8-c1981c36a8ef",
+      "application_id": "0c6fa55a-7fe8-41e6-b65a-c217a6b3dff3",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.559Z"
+    },
+    "23985209-b441-4461-b685-0b09ee864f00": {
+      "decision_id": "23985209-b441-4461-b685-0b09ee864f00",
+      "application_id": "0c6fa55a-7fe8-41e6-b65a-c217a6b3dff3",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.568Z"
+    },
+    "32bb72c3-e885-4673-81d2-02e890ebafbf": {
+      "decision_id": "32bb72c3-e885-4673-81d2-02e890ebafbf",
+      "application_id": "0c6fa55a-7fe8-41e6-b65a-c217a6b3dff3",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_1bffb350-3547-486f-9b84-0fb68e583ed6",
+      "created_at": "2026-09-22T12:55:18.589Z"
+    },
+    "1eb8650c-ead5-4a61-b09e-aa632142a7d3": {
+      "decision_id": "1eb8650c-ead5-4a61-b09e-aa632142a7d3",
+      "application_id": "0c6fa55a-7fe8-41e6-b65a-c217a6b3dff3",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:55:18.601Z"
+    },
+    "a77108e5-93ae-41b8-a075-f4d45b151419": {
+      "decision_id": "a77108e5-93ae-41b8-a075-f4d45b151419",
+      "application_id": "06b79c1f-be49-44a3-a0fb-71eb019e1f95",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": "lease_9aae5988-075f-4007-808e-43cfa4121530",
+      "created_at": "2026-09-22T12:59:05.814Z"
+    },
+    "8ccdca27-f999-4944-b7e5-47a791143cd7": {
+      "decision_id": "8ccdca27-f999-4944-b7e5-47a791143cd7",
+      "application_id": "06b79c1f-be49-44a3-a0fb-71eb019e1f95",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-22T12:59:37.624Z"
+    }
+  },
   "meta": {
-    "count": 0,
-    "lastModified": "2026-08-14T07:28:53.843Z"
+    "count": 121,
+    "lastModified": "2026-09-22T12:59:37.625Z"
   }
 }

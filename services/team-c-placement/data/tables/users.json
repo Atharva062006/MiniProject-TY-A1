@@ -1,0 +1,168 @@
+{
+  "rows": {
+    "USR-FACULTY-001": {
+      "user_id": "USR-FACULTY-001",
+      "username": "faculty",
+      "email": "faculty@rit.edu",
+      "password_hash": "$2b$10$NWa/a7e9YUg0Hsy.SJlBi.fk0UWqSr4llMVUxqpS8uErAMQZSdtzO",
+      "role": "faculty",
+      "student_id": null,
+      "name": "Prof. Deshmukh (T&P Coordinator)",
+      "created_at": "2026-09-22T10:03:17.731Z"
+    },
+    "USR-ADMIN-001": {
+      "user_id": "USR-ADMIN-001",
+      "username": "admin",
+      "email": "admin@rit.edu",
+      "password_hash": "$2b$10$NWa/a7e9YUg0Hsy.SJlBi.ClTTEbgM.VGFvAvY8PvrrUhytryJwW2",
+      "role": "admin",
+      "student_id": null,
+      "name": "Training & Placement Officer",
+      "created_at": "2026-09-22T10:03:17.731Z"
+    },
+    "USR-ALICE-001": {
+      "user_id": "USR-ALICE-001",
+      "username": "alice",
+      "email": "alice@rit.edu",
+      "password_hash": "$2b$10$Hc6xfBScq.VH9vsKGySPnOWBSZ7gfUeMQlKKV9SyB7/Ukn0pH/LCq",
+      "role": "student",
+      "student_id": "STU001",
+      "name": "Alice Sharma",
+      "created_at": "2026-09-22T10:09:00.055Z"
+    },
+    "USR-BOB-002": {
+      "user_id": "USR-BOB-002",
+      "username": "bob",
+      "email": "bob@rit.edu",
+      "password_hash": "$2b$10$Hc6xfBScq.VH9vsKGySPnOWBSZ7gfUeMQlKKV9SyB7/Ukn0pH/LCq",
+      "role": "student",
+      "student_id": "STU002",
+      "name": "Bob Patil",
+      "created_at": "2026-09-22T10:09:00.055Z"
+    },
+    "USR-CAROL-003": {
+      "user_id": "USR-CAROL-003",
+      "username": "carol",
+      "email": "carol@rit.edu",
+      "password_hash": "$2b$10$Hc6xfBScq.VH9vsKGySPnOWBSZ7gfUeMQlKKV9SyB7/Ukn0pH/LCq",
+      "role": "student",
+      "student_id": "STU003",
+      "name": "Carol Mehta",
+      "created_at": "2026-09-22T10:09:00.055Z"
+    },
+    "a541579f-1ce5-45f5-a371-d667c1e3ff21": {
+      "user_id": "a541579f-1ce5-45f5-a371-d667c1e3ff21",
+      "username": "david_1790073172151",
+      "email": "david_1790073172151@rit.edu",
+      "password_hash": "$2b$10$JXf0K1iaWi4QTVrfczcK6.U4iMQgZQEt8H8R9n9IhRsmEabqb1LyO",
+      "role": "student",
+      "student_id": "STU-5114900F",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T10:32:52.227Z"
+    },
+    "bde21664-c011-4376-a468-04926d1216bc": {
+      "user_id": "bde21664-c011-4376-a468-04926d1216bc",
+      "username": "mane",
+      "email": "20403015@ritindia.edu",
+      "password_hash": "$2b$10$zkdnLpP2sIXciMxwFNzhY.PFa6xIDbKMD7PI7um2EH0c8w5Yc/T8O",
+      "role": "student",
+      "student_id": "STU-A3A5203A",
+      "name": "Atharva",
+      "created_at": "2026-09-22T10:37:30.454Z"
+    },
+    "f27734e8-95df-4d92-983c-80087abc00c0": {
+      "user_id": "f27734e8-95df-4d92-983c-80087abc00c0",
+      "username": "david_1790078650760",
+      "email": "david_1790078650760@rit.edu",
+      "password_hash": "$2b$10$whvO4xhatHDFuTQfS.ePTee4AYQ2J.QMHMw8HQTmYvghbiPTqBXE.",
+      "role": "student",
+      "student_id": "STU-E987407B",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:04:10.845Z"
+    },
+    "d0b30173-8755-40b3-84e4-4e0e85ba1113": {
+      "user_id": "d0b30173-8755-40b3-84e4-4e0e85ba1113",
+      "username": "david_1790079217468",
+      "email": "david_1790079217468@rit.edu",
+      "password_hash": "$2b$10$4JKK0i6FwTmQBmbZv2.SJ.KKt2E0VxCbs/5248vr7o1TgPHg7pcrS",
+      "role": "student",
+      "student_id": "STU-664E1179",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:13:37.563Z"
+    },
+    "779a967f-39cb-4b85-a9e1-baff99f7e983": {
+      "user_id": "779a967f-39cb-4b85-a9e1-baff99f7e983",
+      "username": "david_1790079369513",
+      "email": "david_1790079369513@rit.edu",
+      "password_hash": "$2b$10$9gwSYKfadR686TOyBOHC.u8xaZ5RBCUHSvq9qwqlfBbTS/gQ8gUnG",
+      "role": "student",
+      "student_id": "STU-DBA63829",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:16:09.670Z"
+    },
+    "dd6e0ee4-785e-459a-911c-d4d58c2f4e99": {
+      "user_id": "dd6e0ee4-785e-459a-911c-d4d58c2f4e99",
+      "username": "david_1790079817380",
+      "email": "david_1790079817380@rit.edu",
+      "password_hash": "$2b$10$CJyqQ3bEgm9OJIHJdr4f2.r8hRolzS2ODxjDZkA9WwmBA7Kk0NeKK",
+      "role": "student",
+      "student_id": "STU-A8E0A3B6",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:23:37.460Z"
+    },
+    "423d9070-155c-479f-b49f-459f82044adf": {
+      "user_id": "423d9070-155c-479f-b49f-459f82044adf",
+      "username": "david_1790079941750",
+      "email": "david_1790079941750@rit.edu",
+      "password_hash": "$2b$10$5ueMRB9qmSHiejchdhETOump/8Xh2H/O87d69A0UvoCs.jnZrt6Au",
+      "role": "student",
+      "student_id": "STU-C64598DA",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:25:41.902Z"
+    },
+    "d4d16c35-b361-4a00-8f7b-b2fc74cf9b62": {
+      "user_id": "d4d16c35-b361-4a00-8f7b-b2fc74cf9b62",
+      "username": "david_1790079999862",
+      "email": "david_1790079999862@rit.edu",
+      "password_hash": "$2b$10$/3hB1VZWGuxmtnhSzFwtvuutY0p9XR1kTL3HGJV.cm6rbRcqcixIm",
+      "role": "student",
+      "student_id": "STU-53846BAA",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:26:39.940Z"
+    },
+    "910fbce9-5f24-4396-87ea-fc717a55190c": {
+      "user_id": "910fbce9-5f24-4396-87ea-fc717a55190c",
+      "username": "david_1790080146851",
+      "email": "david_1790080146851@rit.edu",
+      "password_hash": "$2b$10$gbvNTz9r3LE3Hgtho3jgs.cnWkPAhuPClQlHwvjYKKFLR97A608LC",
+      "role": "student",
+      "student_id": "STU-E5EF377E",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:29:06.943Z"
+    },
+    "e03c484f-9e14-4d3d-a0cf-27d5f18320a7": {
+      "user_id": "e03c484f-9e14-4d3d-a0cf-27d5f18320a7",
+      "username": "david_1790081569961",
+      "email": "david_1790081569961@rit.edu",
+      "password_hash": "$2b$10$U0AU/ulcNwhCWG3q10RRSOgqJBA2rnyDDnWXAkzLRvjhkvFSSncTa",
+      "role": "student",
+      "student_id": "STU-CF86A56A",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:52:50.037Z"
+    },
+    "3dc029e2-87fb-40fb-9301-a1d7442ec164": {
+      "user_id": "3dc029e2-87fb-40fb-9301-a1d7442ec164",
+      "username": "david_1790081718183",
+      "email": "david_1790081718183@rit.edu",
+      "password_hash": "$2b$10$RPxFeBKidni2JaO7Ydxo/uvD3QHJTfxmiul4QAbKOfAPWaVmb.RYq",
+      "role": "student",
+      "student_id": "STU-962197B5",
+      "name": "David Sharma",
+      "created_at": "2026-09-22T12:55:18.261Z"
+    }
+  },
+  "meta": {
+    "count": 16,
+    "lastModified": "2026-09-22T12:55:18.262Z"
+  }
+}

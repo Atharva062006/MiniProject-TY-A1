@@ -73,7 +73,7 @@ class BTreeIndex {
     } else {
       while (i >= 0 && this._cmp(key, node.keys[i]) < 0) i--;
       i++;
-      if (node.children[i].isFull()) {
+      if (node.children[i] && node.children[i].isFull()) {
         this._splitChild(node, i);
         if (this._cmp(key, node.keys[i]) > 0) i++;
       }
@@ -86,21 +86,21 @@ class BTreeIndex {
     const child = parent.children[childIdx];
     const sibling = new BTreeNode(child.isLeaf, this.order);
 
-    // Move upper half keys to sibling
-    sibling.keys   = child.keys.splice(t);
     if (child.isLeaf) {
+      sibling.keys   = child.keys.splice(t);
       sibling.values = child.values.splice(t);
-    } else {
-      sibling.children = child.children.splice(t + 1);
-      const promotedKey = child.keys.splice(t - 1, 1)[0];
+      const promotedKey = sibling.keys[0]; // for leaf: copy up
       parent.keys.splice(childIdx, 0, promotedKey);
       parent.children.splice(childIdx + 1, 0, sibling);
-      return;
+    } else {
+      const promotedKey = child.keys[t];
+      sibling.keys = child.keys.slice(t + 1);
+      child.keys = child.keys.slice(0, t);
+      sibling.children = child.children.slice(t + 1);
+      child.children = child.children.slice(0, t + 1);
+      parent.keys.splice(childIdx, 0, promotedKey);
+      parent.children.splice(childIdx + 1, 0, sibling);
     }
-
-    const promotedKey = sibling.keys[0]; // for leaf: copy up
-    parent.keys.splice(childIdx, 0, promotedKey);
-    parent.children.splice(childIdx + 1, 0, sibling);
   }
 
   // ─── Search ───────────────────────────────────────────────────────────────

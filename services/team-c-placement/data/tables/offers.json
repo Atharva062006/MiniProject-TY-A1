@@ -1,7 +1,64 @@
 {
-  "rows": {},
+  "rows": {
+    "d74ceb36-3880-4908-9186-a829880457e0": {
+      "offer_id": "d74ceb36-3880-4908-9186-a829880457e0",
+      "application_id": "2f6fb7ab-8d20-439f-98ee-7ff9f1e6b878",
+      "drive_id": "DRV001",
+      "status": "ACCEPTED",
+      "committed_at": "2026-09-22T12:26:40.241Z"
+    },
+    "092ca12f-9844-4fa8-a3f0-7d6a55f6af2c": {
+      "offer_id": "092ca12f-9844-4fa8-a3f0-7d6a55f6af2c",
+      "application_id": "03c717a3-a6b6-4afa-96b7-b9c964104d6c",
+      "drive_id": "DRV001",
+      "status": "ACCEPTED",
+      "committed_at": "2026-09-22T12:29:07.428Z"
+    },
+    "2d92ef3e-7383-475e-b5b6-eb09c5866808": {
+      "offer_id": "2d92ef3e-7383-475e-b5b6-eb09c5866808",
+      "application_id": "b77cddb2-e02f-4a41-9cd2-dbc9f3c27232",
+      "drive_id": "DRV001",
+      "status": "COMPENSATED",
+      "committed_at": null
+    },
+    "bde5f99b-657b-41a4-a2bd-a8bc0a775f78": {
+      "offer_id": "bde5f99b-657b-41a4-a2bd-a8bc0a775f78",
+      "application_id": "f4ccec01-0f45-496c-b530-1812036894f5",
+      "drive_id": "DRV001",
+      "status": "ACCEPTED",
+      "committed_at": "2026-09-22T12:52:50.320Z"
+    },
+    "0d560042-9ac0-4205-ad8d-40ccef35a50c": {
+      "offer_id": "0d560042-9ac0-4205-ad8d-40ccef35a50c",
+      "application_id": "2d90bfd5-9f44-4118-94ec-eba44753320b",
+      "drive_id": "DRV001",
+      "status": "COMPENSATED",
+      "committed_at": null
+    },
+    "8c769114-b905-43b1-89fa-364184027130": {
+      "offer_id": "8c769114-b905-43b1-89fa-364184027130",
+      "application_id": "1e707b48-29ec-4cc7-a9c5-601553f18633",
+      "drive_id": "DRV001",
+      "status": "ACCEPTED",
+      "committed_at": "2026-09-22T12:55:18.521Z"
+    },
+    "0b940eb0-ff8f-4aa4-bd63-9138d2f5d027": {
+      "offer_id": "0b940eb0-ff8f-4aa4-bd63-9138d2f5d027",
+      "application_id": "0c6fa55a-7fe8-41e6-b65a-c217a6b3dff3",
+      "drive_id": "DRV001",
+      "status": "COMPENSATED",
+      "committed_at": null
+    },
+    "33992fad-5692-4530-9438-4a69823f34a9": {
+      "offer_id": "33992fad-5692-4530-9438-4a69823f34a9",
+      "application_id": "06b79c1f-be49-44a3-a0fb-71eb019e1f95",
+      "drive_id": "DRV001",
+      "status": "PENDING",
+      "committed_at": null
+    }
+  },
   "meta": {
-    "count": 0,
-    "lastModified": "2026-08-14T07:28:53.843Z"
+    "count": 8,
+    "lastModified": "2026-09-22T12:59:37.642Z"
   }
 }

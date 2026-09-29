@@ -279,6 +279,11 @@ class Database {
 
     // idempotency_keys
     register('idempotency_keys_key_hash', new HashIndex('idempotency_keys_key_hash'), 'key');
+
+    // users
+    register('users_user_id_hash',  new HashIndex('users_user_id_hash'),  'user_id');
+    register('users_username_hash', new HashIndex('users_username_hash'), 'username');
+    register('users_email_hash',    new HashIndex('users_email_hash'),    'email');
   }
 
   _buildIndexes() {
