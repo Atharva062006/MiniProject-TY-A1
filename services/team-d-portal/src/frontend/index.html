@@ -3,170 +3,238 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>APNILEAP — Placement Portal &amp; Analytics Dashboard</title>
-  <meta name="description" content="Campus Placement Eligibility and Performance Analytics Platform (Team D)" />
+  <title>Campus Placement Management Portal</title>
+  <meta name="description" content="Enterprise Campus Placement Management & Recruitment Automation Portal" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/main.css" />
 </head>
 <body>
-  <div id="app-container">
-    <!-- Top Header Navigation Bar -->
-    <header class="app-header">
-      <div class="header-brand">
-        <div class="brand-logo">APNILEAP</div>
-        <div class="brand-subtitle">Placement Portal &amp; Analytics</div>
+  <div id="app-layout" class="app-layout">
+    <!-- Left Navigation Sidebar -->
+    <aside id="app-sidebar" class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="brand-container">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+              <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-name">Placement Portal</span>
+            <span class="brand-tag">Campus Recruitment</span>
+          </div>
+        </div>
+        <div id="sidebar-role-badge" class="role-badge">Guest Portal</div>
       </div>
 
-      <div class="header-controls">
-        <!-- User Session Indicator & Auth Controls -->
-        <div id="user-session-container" class="control-group user-session-group">
-          <span id="user-display-chip" class="user-chip">[Guest]</span>
-          <button id="auth-btn" class="btn btn-sm btn-primary" type="button">Sign In</button>
-          <button id="logout-btn" class="btn btn-sm btn-secondary hidden" type="button">Sign Out</button>
+      <!-- Navigation Links (Dynamically populated based on role & route) -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Navigation</div>
+        <div id="sidebar-nav-links" class="nav-links">
+          <!-- Dynamically populated links -->
+        </div>
+      </nav>
+
+      <!-- Sidebar User Footer -->
+      <div class="sidebar-footer">
+        <div id="sidebar-user-card" class="user-card">
+          <div id="sidebar-user-avatar" class="user-avatar">G</div>
+          <div class="user-info">
+            <div id="sidebar-user-name" class="user-name">Guest User</div>
+            <div id="sidebar-user-role" class="user-subtext">Click Sign In</div>
+          </div>
+          <button id="sidebar-logout-btn" class="icon-btn hidden" title="Sign Out" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Header Navigation Bar -->
+      <header class="app-header">
+        <div class="header-left">
+          <button id="mobile-sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle navigation" type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <div class="breadcrumb-container">
+            <span class="breadcrumb-root">Portal</span>
+            <span class="breadcrumb-separator">/</span>
+            <span id="breadcrumb-current" class="breadcrumb-current">Placement Drives</span>
+          </div>
         </div>
 
-        <!-- Connection Status & Timestamp -->
-        <div class="status-indicator">
-          <span id="connection-chip" class="chip chip-connecting">[Connecting...]</span>
-          <span id="last-updated" class="timestamp-text">--:--:--</span>
+        <div class="header-right">
+          <!-- Connection Status & Sync Timestamp -->
+          <div class="status-indicator">
+            <span id="connection-chip" class="status-chip chip-connecting">
+              <span class="status-dot"></span>
+              <span class="status-label">Connecting...</span>
+            </span>
+            <span id="last-updated" class="timestamp-text">--:--:--</span>
+          </div>
+
+          <!-- User Session Indicator & Auth Controls -->
+          <div id="user-session-container" class="header-auth-controls">
+            <span id="user-display-chip" class="user-chip hidden">Guest</span>
+            <button id="auth-btn" class="btn btn-sm btn-primary" type="button">Sign In</button>
+            <button id="logout-btn" class="btn btn-sm btn-outline hidden" type="button">Sign Out</button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
-    <!-- Navigation Tabs (Role-Aware) -->
-    <nav class="role-nav">
-      <div id="nav-tabs" class="tab-list">
-        <!-- Injected dynamically by app.js based on active role -->
+      <!-- Notification / Banner Bar -->
+      <div id="notification-banner" class="banner hidden">
+        <div class="banner-content">
+          <span class="banner-icon-slot"></span>
+          <span id="banner-text" class="banner-text"></span>
+        </div>
+        <button id="banner-close" class="banner-close-btn" type="button" aria-label="Close notification">✕</button>
       </div>
-    </nav>
 
-    <!-- Notification / Banner Bar -->
-    <div id="notification-banner" class="banner hidden">
-      <span id="banner-text" class="banner-text"></span>
-      <button id="banner-close" class="banner-close-btn" type="button">[Dismiss]</button>
+      <!-- Main Dynamic Content Canvas -->
+      <main id="main-content" class="content-canvas">
+        <!-- Rendered dynamically by app.js router -->
+      </main>
     </div>
-
-    <!-- Main Content Area -->
-    <main id="main-content" class="content-area">
-      <!-- Views will be mounted dynamically here -->
-    </main>
   </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS                                                                    -->
+  <!-- ========================================================================= -->
 
   <!-- Modal: Apply Confirmation -->
   <div id="apply-modal" class="modal-backdrop hidden">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 id="modal-drive-title" class="modal-title">Apply to Drive</h3>
-        <button id="modal-apply-close" class="modal-close-btn" type="button">[X]</button>
+        <div>
+          <h3 id="modal-drive-title" class="modal-title">Apply to Drive</h3>
+          <p class="modal-subtitle">Review your profile credentials and submit your placement application</p>
+        </div>
+        <button id="modal-apply-close" class="modal-close-btn" type="button">✕</button>
       </div>
       <form id="apply-form" class="modal-body">
         <input type="hidden" id="apply-drive-id" />
 
-        <div class="form-row">
-          <span class="detail-label">Drive ID:</span>
-          <span id="modal-drive-id-display" class="detail-value mono">--</span>
-        </div>
-        <div class="form-row">
-          <span class="detail-label">Company:</span>
-          <span id="modal-company-display" class="detail-value">--</span>
-        </div>
-        <div class="form-row">
-          <span class="detail-label">Candidate:</span>
-          <span id="modal-student-display" class="detail-value">--</span>
-        </div>
-        <div class="form-row">
-          <span class="detail-label">Academic Metrics:</span>
-          <span id="modal-metrics-display" class="detail-value">--</span>
+        <div class="detail-box">
+          <div class="detail-item">
+            <span class="detail-label">Company &amp; Package</span>
+            <span id="modal-company-display" class="detail-value">--</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Applicant Name</span>
+            <span id="modal-student-display" class="detail-value">--</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Your Academic Profile</span>
+            <span id="modal-metrics-display" class="detail-value">--</span>
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="resume-version">Resume Profile:</label>
+          <label for="resume-version" class="form-label">Resume Version</label>
           <select id="resume-version" class="form-select">
-            <option value="v1.0">v1.0 (Core Technical Profile)</option>
-            <option value="v1.1">v1.1 (Fullstack &amp; DSA Focus)</option>
-            <option value="v2.0">v2.0 (Data Science &amp; Analytics Focus)</option>
+            <option value="v1.0">Version 1 — General Profile</option>
+            <option value="v1.1">Version 1.1 — Full-Stack &amp; DSA</option>
+            <option value="v2.0">Version 2 — Data Science Focus</option>
           </select>
         </div>
 
-        <div class="form-group checkbox-group">
+        <div class="form-group checkbox-card">
           <label class="checkbox-label">
             <input type="checkbox" id="apply-consent" required />
-            <span>I confirm that my submitted academic data is accurate and authorize automated eligibility verification and skill ranking evaluation.</span>
+            <span>I confirm that my academic information is accurate and I agree to participate in this recruitment drive.</span>
           </label>
         </div>
 
-        <div id="apply-modal-progress" class="orchestration-status hidden">
-          <div class="spinner-inline"></div>
-          <span id="apply-progress-text">Orchestrating workflow across Team C, Team A, and Team B...</span>
+        <div id="apply-modal-progress" class="status-box hidden">
+          <div class="spinner-sm"></div>
+          <span id="apply-progress-text">Submitting your application...</span>
         </div>
 
         <div class="modal-footer">
-          <button type="button" id="modal-apply-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="button" id="modal-apply-cancel" class="btn btn-outline">Cancel</button>
           <button type="submit" id="modal-apply-submit" class="btn btn-primary">Submit Application</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Drive Criteria Editor (Placement Admin) -->
+  <!-- Modal: Drive Edit (Placement Admin) -->
   <div id="drive-edit-modal" class="modal-backdrop hidden">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Edit Drive Criteria &amp; Settings</h3>
-        <button id="modal-edit-close" class="modal-close-btn" type="button">[X]</button>
+        <div>
+          <h3 class="modal-title">Edit Drive Details</h3>
+          <p class="modal-subtitle">Update recruitment criteria, openings, and drive status</p>
+        </div>
+        <button id="modal-edit-close" class="modal-close-btn" type="button">✕</button>
       </div>
       <form id="drive-edit-form" class="modal-body">
         <input type="hidden" id="edit-drive-id" />
 
         <div class="form-group">
-          <label for="edit-title">Drive Title:</label>
+          <label for="edit-title" class="form-label">Drive Title</label>
           <input type="text" id="edit-title" class="form-input" required />
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="edit-seats">Total Seats:</label>
+            <label for="edit-seats" class="form-label">Total Openings</label>
             <input type="number" id="edit-seats" class="form-input" min="1" required />
           </div>
           <div class="form-group">
-            <label for="edit-package">Package (INR / Annum):</label>
+            <label for="edit-package" class="form-label">Annual Package (INR)</label>
             <input type="number" id="edit-package" class="form-input" min="100000" step="50000" required />
           </div>
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="edit-state">Drive State:</label>
+            <label for="edit-state" class="form-label">Drive Status</label>
             <select id="edit-state" class="form-select">
-              <option value="OPEN">OPEN</option>
-              <option value="SCREENING">SCREENING</option>
-              <option value="CLOSED">CLOSED</option>
-              <option value="DRAFT">DRAFT</option>
+              <option value="OPEN">Open</option>
+              <option value="SCREENING">Screening</option>
+              <option value="CLOSED">Closed</option>
+              <option value="DRAFT">Draft</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="edit-min-cgpa">Min CGPA:</label>
+            <label for="edit-min-cgpa" class="form-label">Minimum CGPA</label>
             <input type="number" id="edit-min-cgpa" class="form-input" min="0" max="10" step="0.1" required />
           </div>
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="edit-max-backlogs">Max Backlogs:</label>
+            <label for="edit-max-backlogs" class="form-label">Allowed Backlogs</label>
             <input type="number" id="edit-max-backlogs" class="form-input" min="0" max="10" required />
           </div>
           <div class="form-group">
-            <label for="edit-min-attendance">Min Attendance (%):</label>
+            <label for="edit-min-attendance" class="form-label">Minimum Attendance (%)</label>
             <input type="number" id="edit-min-attendance" class="form-input" min="0" max="100" required />
           </div>
         </div>
 
         <div class="form-group">
-          <label for="edit-branches">Eligible Branches (comma separated):</label>
+          <label for="edit-branches" class="form-label">Eligible Branches (comma separated)</label>
           <input type="text" id="edit-branches" class="form-input" placeholder="CSE, IT, ENTC" />
         </div>
 
         <div class="modal-footer">
-          <button type="button" id="modal-edit-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="button" id="modal-edit-cancel" class="btn btn-outline">Cancel</button>
           <button type="submit" id="modal-edit-submit" class="btn btn-primary">Save Changes</button>
         </div>
       </form>
@@ -177,9 +245,13 @@
   <div id="auth-modal" class="modal-backdrop hidden">
     <div class="modal-dialog auth-dialog">
       <div class="modal-header">
-        <h3 id="auth-modal-title" class="modal-title">Account Authentication</h3>
-        <button id="modal-auth-close" class="modal-close-btn" type="button">[X]</button>
+        <div>
+          <h3 id="auth-modal-title" class="modal-title">Sign In</h3>
+          <p class="modal-subtitle">Access your personalized placement portal</p>
+        </div>
+        <button id="modal-auth-close" class="modal-close-btn" type="button">✕</button>
       </div>
+
       <div class="auth-tabs">
         <button type="button" id="tab-auth-login" class="auth-tab-btn active">Sign In</button>
         <button type="button" id="tab-auth-register" class="auth-tab-btn">Create Account</button>
@@ -188,22 +260,22 @@
       <!-- Login Form -->
       <form id="login-form" class="modal-body auth-body">
         <div class="form-group">
-          <label for="login-username">Username or Email:</label>
+          <label for="login-username" class="form-label">Username or Email</label>
           <input type="text" id="login-username" class="form-input" placeholder="e.g. alice or alice@rit.edu" required />
         </div>
         <div class="form-group">
-          <label for="login-password">Password:</label>
-          <input type="password" id="login-password" class="form-input" placeholder="Enter account password" required />
+          <label for="login-password" class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required />
         </div>
 
         <div class="quick-login-section">
-          <span class="quick-login-label">Quick Sign-In (Demo Credentials):</span>
+          <span class="quick-login-label">Quick Sign-In (Demo Profiles):</span>
           <div class="quick-login-buttons">
-            <button type="button" class="btn-quick-fill" data-user="alice" data-pass="password123">[Alice (Student)]</button>
-            <button type="button" class="btn-quick-fill" data-user="bob" data-pass="password123">[Bob (Student)]</button>
-            <button type="button" class="btn-quick-fill" data-user="carol" data-pass="password123">[Carol (Student)]</button>
-            <button type="button" class="btn-quick-fill" data-user="faculty" data-pass="faculty123">[Faculty / TPO]</button>
-            <button type="button" class="btn-quick-fill" data-user="admin" data-pass="admin123">[Placement Admin]</button>
+            <button type="button" class="btn-quick-fill" data-user="alice" data-pass="password123">Alice (Student)</button>
+            <button type="button" class="btn-quick-fill" data-user="bob" data-pass="password123">Bob (Student)</button>
+            <button type="button" class="btn-quick-fill" data-user="carol" data-pass="password123">Carol (Student)</button>
+            <button type="button" class="btn-quick-fill" data-user="faculty" data-pass="faculty123">Faculty / TPO</button>
+            <button type="button" class="btn-quick-fill" data-user="admin" data-pass="admin123">Placement Admin</button>
           </div>
         </div>
 
@@ -217,7 +289,7 @@
       <!-- Register Form -->
       <form id="register-form" class="modal-body auth-body hidden">
         <div class="form-group">
-          <label for="reg-role">Account Type:</label>
+          <label for="reg-role" class="form-label">Account Type</label>
           <select id="reg-role" class="form-select">
             <option value="student">Student</option>
             <option value="faculty">Faculty / Coordinator</option>
@@ -226,22 +298,22 @@
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="reg-name">Full Name:</label>
+            <label for="reg-name" class="form-label">Full Name</label>
             <input type="text" id="reg-name" class="form-input" placeholder="e.g. David Sharma" required />
           </div>
           <div class="form-group">
-            <label for="reg-username">Username:</label>
+            <label for="reg-username" class="form-label">Username</label>
             <input type="text" id="reg-username" class="form-input" placeholder="e.g. david" required />
           </div>
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="reg-email">College Email:</label>
+            <label for="reg-email" class="form-label">College Email</label>
             <input type="email" id="reg-email" class="form-input" placeholder="e.g. david@rit.edu" required />
           </div>
           <div class="form-group">
-            <label for="reg-password">Password:</label>
+            <label for="reg-password" class="form-label">Password</label>
             <input type="password" id="reg-password" class="form-input" placeholder="At least 6 characters" minlength="6" required />
           </div>
         </div>
@@ -250,7 +322,7 @@
         <div id="student-reg-fields">
           <div class="form-grid-2">
             <div class="form-group">
-              <label for="reg-branch">Branch / Department:</label>
+              <label for="reg-branch" class="form-label">Department</label>
               <select id="reg-branch" class="form-select">
                 <option value="CSE">Computer Science &amp; Engineering (CSE)</option>
                 <option value="IT">Information Technology (IT)</option>
@@ -260,24 +332,24 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="reg-cgpa">Cumulative GPA (0 - 10):</label>
+              <label for="reg-cgpa" class="form-label">CGPA (0 – 10)</label>
               <input type="number" id="reg-cgpa" class="form-input" step="0.1" min="0" max="10" value="8.5" required />
             </div>
           </div>
 
           <div class="form-grid-2">
             <div class="form-group">
-              <label for="reg-backlogs">Active Backlogs:</label>
+              <label for="reg-backlogs" class="form-label">Active Backlogs</label>
               <input type="number" id="reg-backlogs" class="form-input" min="0" max="10" value="0" required />
             </div>
             <div class="form-group">
-              <label for="reg-attendance">Attendance (%):</label>
+              <label for="reg-attendance" class="form-label">Attendance (%)</label>
               <input type="number" id="reg-attendance" class="form-input" min="0" max="100" value="85" required />
             </div>
           </div>
 
           <div class="form-group">
-            <label for="reg-skills">Technical Skills (comma separated):</label>
+            <label for="reg-skills" class="form-label">Key Skills (comma separated)</label>
             <input type="text" id="reg-skills" class="form-input" placeholder="e.g. JavaScript, Python, SQL" value="JavaScript, Python, DSA" />
           </div>
         </div>
@@ -291,46 +363,49 @@
     </div>
   </div>
 
-  <!-- Modal: Create Recruiter Company -->
+  <!-- Modal: Add Company -->
   <div id="create-company-modal" class="modal-backdrop hidden">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Register Recruiter Company</h3>
-        <button id="modal-create-company-close" class="modal-close-btn" type="button">[X]</button>
+        <div>
+          <h3 class="modal-title">Add Company</h3>
+          <p class="modal-subtitle">Register a corporate recruitment partner</p>
+        </div>
+        <button id="modal-create-company-close" class="modal-close-btn" type="button">✕</button>
       </div>
       <form id="create-company-form" class="modal-body">
         <div class="form-group">
-          <label for="new-company-name">Company Name:</label>
+          <label for="new-company-name" class="form-label">Company Name</label>
           <input type="text" id="new-company-name" class="form-input" placeholder="e.g. Google India" required />
         </div>
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="new-company-industry">Industry Sector:</label>
+            <label for="new-company-industry" class="form-label">Industry</label>
             <input type="text" id="new-company-industry" class="form-input" placeholder="e.g. Technology / Cloud" required />
           </div>
           <div class="form-group">
-            <label for="new-company-tier">Hiring Tier:</label>
+            <label for="new-company-tier" class="form-label">Company Category</label>
             <select id="new-company-tier" class="form-select">
-              <option value="Tier 1">Tier 1 (Core Product)</option>
-              <option value="Tier 2">Tier 2 (Service / Consulting)</option>
-              <option value="Dream">Dream Offer (&gt; 15 LPA)</option>
+              <option value="Tier 1">Tier 1</option>
+              <option value="Tier 2">Tier 2</option>
+              <option value="Dream">Dream Offer (15+ LPA)</option>
             </select>
           </div>
         </div>
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="new-company-email">Corporate Contact Email:</label>
+            <label for="new-company-email" class="form-label">Contact Email</label>
             <input type="email" id="new-company-email" class="form-input" placeholder="recruitment@company.com" required />
           </div>
           <div class="form-group">
-            <label for="new-company-website">Corporate Website:</label>
+            <label for="new-company-website" class="form-label">Website</label>
             <input type="url" id="new-company-website" class="form-input" placeholder="https://careers.company.com" />
           </div>
         </div>
         <div id="company-modal-error" class="auth-error-msg hidden"></div>
         <div class="modal-footer">
-          <button type="button" id="modal-create-company-cancel" class="btn btn-secondary">Cancel</button>
-          <button type="submit" id="modal-create-company-submit" class="btn btn-primary">Save Recruiter</button>
+          <button type="button" id="modal-create-company-cancel" class="btn btn-outline">Cancel</button>
+          <button type="submit" id="modal-create-company-submit" class="btn btn-primary">Add Company</button>
         </div>
       </form>
     </div>
@@ -340,115 +415,118 @@
   <div id="create-drive-modal" class="modal-backdrop hidden">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Create Placement Drive</h3>
-        <button id="modal-create-drive-close" class="modal-close-btn" type="button">[X]</button>
+        <div>
+          <h3 class="modal-title">Create Placement Drive</h3>
+          <p class="modal-subtitle">Publish a new campus recruitment opportunity</p>
+        </div>
+        <button id="modal-create-drive-close" class="modal-close-btn" type="button">✕</button>
       </div>
       <form id="create-drive-form" class="modal-body">
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="new-drive-company-select">Recruiter Company:</label>
+            <label for="new-drive-company-select" class="form-label">Company</label>
             <select id="new-drive-company-select" class="form-select" required>
               <!-- Populated dynamically -->
             </select>
           </div>
           <div class="form-group">
-            <label for="new-drive-title">Drive Title:</label>
+            <label for="new-drive-title" class="form-label">Drive Title</label>
             <input type="text" id="new-drive-title" class="form-input" placeholder="e.g. SDE Graduate Drive 2026" required />
           </div>
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="new-drive-package">Annual Compensation (INR):</label>
+            <label for="new-drive-package" class="form-label">Annual Package (INR)</label>
             <input type="number" id="new-drive-package" class="form-input" min="100000" step="50000" value="1200000" required />
           </div>
           <div class="form-group">
-            <label for="new-drive-seats">Available Seats / Quota:</label>
+            <label for="new-drive-seats" class="form-label">Number of Openings</label>
             <input type="number" id="new-drive-seats" class="form-input" min="1" max="100" value="5" required />
           </div>
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="new-drive-min-cgpa">Minimum CGPA (0 - 10):</label>
+            <label for="new-drive-min-cgpa" class="form-label">Minimum CGPA</label>
             <input type="number" id="new-drive-min-cgpa" class="form-input" min="0" max="10" step="0.1" value="7.5" required />
           </div>
           <div class="form-group">
-            <label for="new-drive-max-backlogs">Allowed Backlogs:</label>
+            <label for="new-drive-max-backlogs" class="form-label">Allowed Backlogs</label>
             <input type="number" id="new-drive-max-backlogs" class="form-input" min="0" max="10" value="0" required />
           </div>
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="new-drive-min-attendance">Min Attendance (%):</label>
+            <label for="new-drive-min-attendance" class="form-label">Minimum Attendance (%)</label>
             <input type="number" id="new-drive-min-attendance" class="form-input" min="0" max="100" value="75" required />
           </div>
           <div class="form-group">
-            <label for="new-drive-branches">Eligible Branches:</label>
+            <label for="new-drive-branches" class="form-label">Eligible Branches</label>
             <input type="text" id="new-drive-branches" class="form-input" value="CSE, IT" placeholder="CSE, IT, ENTC" required />
           </div>
         </div>
 
         <div class="form-group">
-          <label for="new-drive-skills">Required Technical Skills (comma separated):</label>
+          <label for="new-drive-skills" class="form-label">Required Skills (comma separated)</label>
           <input type="text" id="new-drive-skills" class="form-input" value="JavaScript, Python" placeholder="JavaScript, React, Node.js" required />
         </div>
 
         <div id="drive-modal-error" class="auth-error-msg hidden"></div>
         <div class="modal-footer">
-          <button type="button" id="modal-create-drive-cancel" class="btn btn-secondary">Cancel</button>
-          <button type="submit" id="modal-create-drive-submit" class="btn btn-primary">Launch Drive</button>
+          <button type="button" id="modal-create-drive-cancel" class="btn btn-outline">Cancel</button>
+          <button type="submit" id="modal-create-drive-submit" class="btn btn-primary">Create Drive</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Schedule Interview (Team A Mutex Lock) -->
+  <!-- Modal: Schedule Interview -->
   <div id="schedule-modal" class="modal-backdrop hidden">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title">Schedule Candidate Interview</h3>
-        <button id="modal-schedule-close" class="modal-close-btn" type="button">[X]</button>
+        <div>
+          <h3 class="modal-title">Schedule Interview</h3>
+          <p class="modal-subtitle">Assign an interview panel and slot to a candidate</p>
+        </div>
+        <button id="modal-schedule-close" class="modal-close-btn" type="button">✕</button>
       </div>
       <form id="schedule-form" class="modal-body">
         <input type="hidden" id="schedule-app-id" />
         <input type="hidden" id="schedule-student-id" />
 
-        <div class="form-row">
-          <span class="detail-label">Candidate:</span>
-          <span id="schedule-student-name" class="detail-value mono">--</span>
-        </div>
-        <div class="form-row">
-          <span class="detail-label">Drive:</span>
-          <span id="schedule-drive-title" class="detail-value">--</span>
+        <div class="detail-box">
+          <div class="detail-item">
+            <span class="detail-label">Candidate</span>
+            <span id="schedule-student-name" class="detail-value">--</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Recruitment Drive</span>
+            <span id="schedule-drive-title" class="detail-value">--</span>
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="schedule-slot-id">Interview Room / Slot Mutex:</label>
+          <label for="schedule-slot-id" class="form-label">Interview Slot</label>
           <select id="schedule-slot-id" class="form-select" required>
-            <option value="SLOT-ROOM-1-10AM">Interview Room 1 (10:00 AM)</option>
-            <option value="SLOT-ROOM-1-11AM">Interview Room 1 (11:00 AM)</option>
-            <option value="SLOT-ROOM-2-10AM">Interview Room 2 (10:00 AM)</option>
-            <option value="SLOT-ROOM-2-02PM">Interview Room 2 (02:00 PM)</option>
-            <option value="SLOT-PANEL-A-03PM">Panel A Technical Hall (03:00 PM)</option>
+            <option value="SLOT-ROOM-1-10AM">Room 1 — 10:00 AM</option>
+            <option value="SLOT-ROOM-1-11AM">Room 1 — 11:00 AM</option>
+            <option value="SLOT-ROOM-2-10AM">Room 2 — 10:00 AM</option>
+            <option value="SLOT-ROOM-2-02PM">Room 2 — 02:00 PM</option>
+            <option value="SLOT-PANEL-A-03PM">Panel A — 03:00 PM</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="schedule-interviewer-id">Lead Interviewer:</label>
+          <label for="schedule-interviewer-id" class="form-label">Interviewer</label>
           <input type="text" id="schedule-interviewer-id" class="form-input" value="FAC001 (Prof. S. Patil)" required />
-        </div>
-
-        <div class="note-box">
-          <span class="note-title">[Team A Concurrency Notice]</span>
-          <p class="note-text">Claiming this slot issues a 30-minute exclusive mutex lease in Team A's SlotLockManager with Wait-For Graph deadlock prevention.</p>
         </div>
 
         <div id="schedule-modal-error" class="auth-error-msg hidden"></div>
         <div class="modal-footer">
-          <button type="button" id="modal-schedule-cancel" class="btn btn-secondary">Cancel</button>
-          <button type="submit" id="modal-schedule-submit" class="btn btn-primary">Acquire Lock &amp; Schedule</button>
+          <button type="button" id="modal-schedule-cancel" class="btn btn-outline">Cancel</button>
+          <button type="submit" id="modal-schedule-submit" class="btn btn-primary">Confirm Interview</button>
         </div>
       </form>
     </div>

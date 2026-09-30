@@ -4555,10 +4555,181 @@
       "after_value": null,
       "correlation_id": "b96cfc41-0bc2-4b4d-85d3-00f33edc2e27",
       "timestamp": "2026-09-22T12:59:50.755Z"
+    },
+    "729249a5-b4d0-422a-83bf-b7e1bb890e50": {
+      "audit_id": "729249a5-b4d0-422a-83bf-b7e1bb890e50",
+      "actor": "alice",
+      "action": "USER_LOGIN",
+      "table_name": "users",
+      "record_id": "USR-ALICE-001",
+      "before_value": null,
+      "after_value": null,
+      "correlation_id": "bb64afd8-c459-4255-9efd-04d96b232b05",
+      "timestamp": "2026-09-22T16:54:43.854Z"
+    },
+    "36ae59d1-244d-4b78-bc69-cf0fd5d3c3b5": {
+      "audit_id": "36ae59d1-244d-4b78-bc69-cf0fd5d3c3b5",
+      "actor": "admin",
+      "action": "USER_LOGIN",
+      "table_name": "users",
+      "record_id": "USR-ADMIN-001",
+      "before_value": null,
+      "after_value": null,
+      "correlation_id": "2ad84bc6-a9ab-44ef-8df4-5ed0e86230af",
+      "timestamp": "2026-09-22T16:55:37.984Z"
+    },
+    "a83c57a2-107f-4db8-b3dc-d07ec440975c": {
+      "audit_id": "a83c57a2-107f-4db8-b3dc-d07ec440975c",
+      "actor": "alice",
+      "action": "USER_LOGIN",
+      "table_name": "users",
+      "record_id": "USR-ALICE-001",
+      "before_value": null,
+      "after_value": null,
+      "correlation_id": "b50f12e3-a36f-4619-af63-72b0ab01a727",
+      "timestamp": "2026-09-22T16:59:12.421Z"
+    },
+    "dd2cdd62-3f3a-4330-be72-102712c526ea": {
+      "audit_id": "dd2cdd62-3f3a-4330-be72-102712c526ea",
+      "actor": "alice",
+      "action": "USER_LOGIN",
+      "table_name": "users",
+      "record_id": "USR-ALICE-001",
+      "before_value": null,
+      "after_value": null,
+      "correlation_id": "7fb15020-87dd-442a-b12a-9c950fd82601",
+      "timestamp": "2026-09-23T04:52:03.529Z"
+    },
+    "cd6a5a63-c2e0-4429-bae6-be8861424628": {
+      "audit_id": "cd6a5a63-c2e0-4429-bae6-be8861424628",
+      "actor": "faculty",
+      "action": "USER_LOGIN",
+      "table_name": "users",
+      "record_id": "USR-FACULTY-001",
+      "before_value": null,
+      "after_value": null,
+      "correlation_id": "ee7d31f4-3ba2-4897-8112-5f2d41c00955",
+      "timestamp": "2026-09-23T04:52:17.726Z"
+    },
+    "c0adca65-284a-417f-b3b3-1c6a289a56ca": {
+      "audit_id": "c0adca65-284a-417f-b3b3-1c6a289a56ca",
+      "actor": "admin",
+      "action": "USER_LOGIN",
+      "table_name": "users",
+      "record_id": "USR-ADMIN-001",
+      "before_value": null,
+      "after_value": null,
+      "correlation_id": "cae5cafc-3128-4974-87ea-c7208706ce5a",
+      "timestamp": "2026-09-23T04:52:45.174Z"
+    },
+    "4fa35e41-8986-47c8-8f29-a6f93569fa35": {
+      "audit_id": "4fa35e41-8986-47c8-8f29-a6f93569fa35",
+      "actor": "alice",
+      "action": "USER_LOGIN",
+      "table_name": "users",
+      "record_id": "USR-ALICE-001",
+      "before_value": null,
+      "after_value": null,
+      "correlation_id": "354cd785-9909-4b67-88af-d795d1137e2a",
+      "timestamp": "2026-09-28T05:50:17.029Z"
+    },
+    "03064307-1902-44f9-b649-22967ac1394a": {
+      "audit_id": "03064307-1902-44f9-b649-22967ac1394a",
+      "actor": "STU001",
+      "action": "CREATE_APPLICATION",
+      "table_name": "applications",
+      "record_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+      "before_value": null,
+      "after_value": {
+        "application_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+        "student_id": "STU001",
+        "drive_id": "d4932ca9-696f-47c7-991a-085e8d6df214",
+        "state": "APPLIED",
+        "resume_version": "v2.0",
+        "consent": true,
+        "idempotency_key": "e8eccd06-bf34-4389-8481-570fdcaa882a",
+        "version": 1,
+        "created_at": "2026-09-28T05:50:34.638Z",
+        "updated_at": "2026-09-28T05:50:34.638Z"
+      },
+      "correlation_id": "9b67c76d-0bb0-4585-a5d4-9c7e7c6447c5",
+      "timestamp": "2026-09-28T05:50:34.642Z"
+    },
+    "113af619-668a-4b12-9bac-b40c7178280d": {
+      "audit_id": "113af619-668a-4b12-9bac-b40c7178280d",
+      "actor": "system",
+      "action": "COMMIT_OFFER",
+      "table_name": "applications",
+      "record_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+      "before_value": {
+        "state": "SCREENING"
+      },
+      "after_value": {
+        "application_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+        "student_id": "STU001",
+        "drive_id": "d4932ca9-696f-47c7-991a-085e8d6df214",
+        "state": "SCREENING",
+        "resume_version": "v2.0",
+        "consent": true,
+        "idempotency_key": "e8eccd06-bf34-4389-8481-570fdcaa882a",
+        "version": 2,
+        "created_at": "2026-09-28T05:50:34.638Z",
+        "updated_at": "2026-09-28T05:50:34.782Z"
+      },
+      "correlation_id": "9b67c76d-0bb0-4585-a5d4-9c7e7c6447c5",
+      "timestamp": "2026-09-28T05:50:34.801Z"
+    },
+    "489f5cc8-cd40-4e73-ab15-1ef71ab00b98": {
+      "audit_id": "489f5cc8-cd40-4e73-ab15-1ef71ab00b98",
+      "actor": "system",
+      "action": "COMMIT_OFFER",
+      "table_name": "applications",
+      "record_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+      "before_value": {
+        "state": "RULE_EVALUATED"
+      },
+      "after_value": {
+        "application_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+        "student_id": "STU001",
+        "drive_id": "d4932ca9-696f-47c7-991a-085e8d6df214",
+        "state": "RULE_EVALUATED",
+        "resume_version": "v2.0",
+        "consent": true,
+        "idempotency_key": "e8eccd06-bf34-4389-8481-570fdcaa882a",
+        "version": 3,
+        "created_at": "2026-09-28T05:50:34.638Z",
+        "updated_at": "2026-09-28T05:50:34.834Z"
+      },
+      "correlation_id": "9b67c76d-0bb0-4585-a5d4-9c7e7c6447c5",
+      "timestamp": "2026-09-28T05:50:34.850Z"
+    },
+    "0946bd99-a661-4a4a-ba2e-d863a73b5b6a": {
+      "audit_id": "0946bd99-a661-4a4a-ba2e-d863a73b5b6a",
+      "actor": "system",
+      "action": "COMMIT_OFFER",
+      "table_name": "applications",
+      "record_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+      "before_value": {
+        "state": "SHORTLISTED"
+      },
+      "after_value": {
+        "application_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+        "student_id": "STU001",
+        "drive_id": "d4932ca9-696f-47c7-991a-085e8d6df214",
+        "state": "SHORTLISTED",
+        "resume_version": "v2.0",
+        "consent": true,
+        "idempotency_key": "e8eccd06-bf34-4389-8481-570fdcaa882a",
+        "version": 4,
+        "created_at": "2026-09-28T05:50:34.638Z",
+        "updated_at": "2026-09-28T05:50:34.879Z"
+      },
+      "correlation_id": "9b67c76d-0bb0-4585-a5d4-9c7e7c6447c5",
+      "timestamp": "2026-09-28T05:50:34.898Z"
     }
   },
   "meta": {
-    "count": 219,
-    "lastModified": "2026-09-22T12:59:50.756Z"
+    "count": 230,
+    "lastModified": "2026-09-28T05:50:34.900Z"
   }
 }

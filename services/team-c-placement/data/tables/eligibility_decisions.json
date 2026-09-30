@@ -967,10 +967,34 @@
       "failed_rules": [],
       "lease_id": null,
       "created_at": "2026-09-22T12:59:37.624Z"
+    },
+    "7ed112d7-a59c-465a-9fdc-2e657867a505": {
+      "decision_id": "7ed112d7-a59c-465a-9fdc-2e657867a505",
+      "application_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-28T05:50:34.777Z"
+    },
+    "713031b1-6636-4d72-8d79-bd515ac04d0d": {
+      "decision_id": "713031b1-6636-4d72-8d79-bd515ac04d0d",
+      "application_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-28T05:50:34.833Z"
+    },
+    "39860fc0-b19b-4158-a4a9-1758ee434ccc": {
+      "decision_id": "39860fc0-b19b-4158-a4a9-1758ee434ccc",
+      "application_id": "2e974b9a-b43b-404c-8bd1-4ad3234246af",
+      "result": "ELIGIBLE",
+      "failed_rules": [],
+      "lease_id": null,
+      "created_at": "2026-09-28T05:50:34.873Z"
     }
   },
   "meta": {
-    "count": 121,
-    "lastModified": "2026-09-22T12:59:37.625Z"
+    "count": 124,
+    "lastModified": "2026-09-28T05:50:34.883Z"
   }
 }

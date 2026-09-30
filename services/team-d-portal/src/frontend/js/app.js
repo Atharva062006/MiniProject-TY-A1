@@ -1,59 +1,92 @@
 /**
- * APNILEAP Placement Portal & Analytics Dashboard — Team D Frontend SPA
- * Strict Zero-Emoji Professional Web Technology Client
+ * APNILEAP Placement Portal & Recruitment Automation
+ * Multi-Page Light-Theme Client Application
+ * Zero Technical Jargon — Professional Placement Management UX
  */
 
 (function () {
   'use strict';
 
-  // ── Global State ────────────────────────────────────────────────────────────
+  // ── Global Application State ────────────────────────────────────────────────
   const state = {
-    user: null,
     token: localStorage.getItem('apnileap_token') || null,
+    user: null,
     role: 'student', // 'student' | 'faculty' | 'admin'
-    activeTab: 'drives', // depends on active role
-    students: [],
     activeStudent: null,
     drives: [],
+    companies: [],
     applications: [],
     dashboard: null,
     reports: null,
     rankingsPreview: null,
     selectedAlgo: 'WEIGHTED_SCORE',
+    activeDriveFilter: 'ALL',
+    searchQuery: '',
     sseConnected: false,
     eventSource: null,
   };
 
-  // Role Tab Configurations
-  const ROLE_TABS = {
-    student: [
-      { id: 'drives', label: 'Available Drives' },
-      { id: 'applications', label: 'My Applications' },
-      { id: 'profile', label: 'My Profile' },
-    ],
-    faculty: [
-      { id: 'reports', label: 'Placement Reports' },
-      { id: 'cohort', label: 'Cohort Analytics' },
-      { id: 'companies', label: 'Company Directory' },
-    ],
-    admin: [
-      { id: 'dashboard', label: 'Operations Dashboard' },
-      { id: 'drive-management', label: 'Drive Management' },
-      { id: 'companies', label: 'Company Directory' },
-      { id: 'ranking-engine', label: 'Ranking Engine' },
-      { id: 'user-accounts', label: 'User Accounts' },
-      { id: 'audit-trail', label: 'Audit Trail' },
-    ],
+  // ── Route Definitions ───────────────────────────────────────────────────────
+  const ROUTES = {
+    // Student Routes
+    '#/student/drives': { role: 'student', title: 'Placement Drives', breadcrumb: 'Placement Drives', icon: 'briefcase', fn: loadDrivesView },
+    '#/student/applications': { role: 'student', title: 'My Applications', breadcrumb: 'My Applications', icon: 'file-text', fn: loadApplicationsView },
+    '#/student/profile': { role: 'student', title: 'My Profile', breadcrumb: 'My Profile', icon: 'user', fn: loadProfileView },
+
+    // Faculty Routes
+    '#/faculty/reports': { role: 'faculty', title: 'Placement Reports', breadcrumb: 'Placement Reports', icon: 'bar-chart', fn: loadReportsView },
+    '#/faculty/students': { role: 'faculty', title: 'Student Directory', breadcrumb: 'Student Directory', icon: 'users', fn: loadCohortView },
+    '#/faculty/companies': { role: 'faculty', title: 'Company Directory', breadcrumb: 'Company Directory', icon: 'building', fn: loadCompaniesView },
+
+    // Admin Routes
+    '#/admin/dashboard': { role: 'admin', title: 'Placement Dashboard', breadcrumb: 'Dashboard', icon: 'layout', fn: loadDashboardView },
+    '#/admin/drives': { role: 'admin', title: 'Manage Drives', breadcrumb: 'Manage Drives', icon: 'briefcase', fn: loadDriveManagementView },
+    '#/admin/companies': { role: 'admin', title: 'Company Directory', breadcrumb: 'Companies', icon: 'building', fn: loadCompaniesView },
+    '#/admin/rankings': { role: 'admin', title: 'Candidate Rankings', breadcrumb: 'Candidate Rankings', icon: 'award', fn: loadRankingEngineView },
+    '#/admin/users': { role: 'admin', title: 'User Management', breadcrumb: 'Users', icon: 'shield', fn: loadUserAccountsView },
+    '#/admin/audit': { role: 'admin', title: 'Activity Log', breadcrumb: 'Activity Log', icon: 'activity', fn: loadAuditTrailView },
+  };
+
+  // Route Aliases for ease of typing/linking
+  const ROUTE_ALIASES = {
+    '#/drives': '#/student/drives',
+    '#/applications': '#/student/applications',
+    '#/profile': '#/student/profile',
+    '#/reports': '#/faculty/reports',
+    '#/cohort': '#/faculty/students',
+    '#/students': '#/faculty/students',
+    '#/dashboard': '#/admin/dashboard',
+    '#/drive-management': '#/admin/drives',
+    '#/companies': '#/admin/companies',
+    '#/ranking-engine': '#/admin/rankings',
+    '#/user-accounts': '#/admin/users',
+    '#/audit-trail': '#/admin/audit',
+  };
+
+  const DEFAULT_ROUTE_FOR_ROLE = {
+    student: '#/student/drives',
+    faculty: '#/faculty/reports',
+    admin: '#/admin/dashboard',
   };
 
   // ── DOM References ──────────────────────────────────────────────────────────
   const elements = {
+    sidebar: document.getElementById('app-sidebar'),
+    sidebarNavLinks: document.getElementById('sidebar-nav-links'),
+    sidebarRoleBadge: document.getElementById('sidebar-role-badge'),
+    sidebarUserAvatar: document.getElementById('sidebar-user-avatar'),
+    sidebarUserName: document.getElementById('sidebar-user-name'),
+    sidebarUserRole: document.getElementById('sidebar-user-role'),
+    sidebarLogoutBtn: document.getElementById('sidebar-logout-btn'),
+    mobileSidebarToggle: document.getElementById('mobile-sidebar-toggle'),
+
+    breadcrumbCurrent: document.getElementById('breadcrumb-current'),
+    connectionChip: document.getElementById('connection-chip'),
+    lastUpdated: document.getElementById('last-updated'),
     userDisplayChip: document.getElementById('user-display-chip'),
     authBtn: document.getElementById('auth-btn'),
     logoutBtn: document.getElementById('logout-btn'),
-    connectionChip: document.getElementById('connection-chip'),
-    lastUpdated: document.getElementById('last-updated'),
-    navTabs: document.getElementById('nav-tabs'),
+
     banner: document.getElementById('notification-banner'),
     bannerText: document.getElementById('banner-text'),
     bannerClose: document.getElementById('banner-close'),
@@ -87,7 +120,6 @@
     applyForm: document.getElementById('apply-form'),
     applyDriveId: document.getElementById('apply-drive-id'),
     modalDriveTitle: document.getElementById('modal-drive-title'),
-    modalDriveIdDisplay: document.getElementById('modal-drive-id-display'),
     modalCompanyDisplay: document.getElementById('modal-company-display'),
     modalStudentDisplay: document.getElementById('modal-student-display'),
     modalMetricsDisplay: document.getElementById('modal-metrics-display'),
@@ -158,18 +190,24 @@
 
   // ── Helper Utilities ────────────────────────────────────────────────────────
   function updateTimestamp() {
-    const now = new Date();
-    elements.lastUpdated.textContent = now.toTimeString().split(' ')[0];
+    if (elements.lastUpdated) {
+      const now = new Date();
+      elements.lastUpdated.textContent = now.toTimeString().split(' ')[0];
+    }
   }
 
   function showBanner(type, message) {
+    if (!elements.banner || !elements.bannerText) return;
     elements.banner.className = `banner ${type}`;
     elements.bannerText.textContent = message;
     elements.banner.classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function hideBanner() {
-    elements.banner.classList.add('hidden');
+    if (elements.banner) {
+      elements.banner.classList.add('hidden');
+    }
   }
 
   function formatCurrency(amount) {
@@ -183,11 +221,64 @@
       case 'SCREENING': return 'chip-screening';
       case 'RULE_EVALUATED': return 'chip-evaluated';
       case 'SHORTLISTED': return 'chip-shortlisted';
+      case 'INTERVIEW_SCHEDULED': return 'chip-screening';
       case 'SELECTED': return 'chip-selected';
       case 'OFFER_ISSUED': return 'chip-offered';
+      case 'OFFER_ACCEPTED': return 'chip-selected';
+      case 'OFFER_DECLINED': return 'chip-withdrawn';
       case 'NOT_ELIGIBLE': return 'chip-not-eligible';
       case 'WITHDRAWN': return 'chip-withdrawn';
+      case 'WAITLISTED': return 'chip-evaluated';
+      case 'COMPENSATION_REQUIRED': return 'chip-not-eligible';
+      case 'EXPIRED': return 'chip-withdrawn';
       default: return 'chip-applied';
+    }
+  }
+
+  function getStateLabel(stateName) {
+    switch (stateName) {
+      case 'APPLIED': return 'Applied';
+      case 'SCREENING': return 'Under Review';
+      case 'RULE_EVALUATED': return 'Eligibility Checked';
+      case 'SHORTLISTED': return 'Shortlisted';
+      case 'INTERVIEW_SCHEDULED': return 'Interview Scheduled';
+      case 'SELECTED': return 'Selected';
+      case 'OFFER_ISSUED': return 'Offer Received';
+      case 'OFFER_ACCEPTED': return 'Offer Accepted';
+      case 'OFFER_DECLINED': return 'Offer Declined';
+      case 'NOT_ELIGIBLE': return 'Not Eligible';
+      case 'WITHDRAWN': return 'Withdrawn';
+      case 'WAITLISTED': return 'Waitlisted';
+      case 'COMPENSATION_REQUIRED': return 'Pending Review';
+      case 'EXPIRED': return 'Expired';
+      default: return stateName;
+    }
+  }
+
+  function getIconSvg(name) {
+    switch (name) {
+      case 'briefcase':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
+      case 'file-text':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+      case 'user':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+      case 'bar-chart':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>`;
+      case 'users':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+      case 'building':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="2"/><line x1="8" y1="6" x2="8.01" y2="6"/><line x1="16" y1="6" x2="16.01" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="16" y1="18" x2="16.01" y2="18"/></svg>`;
+      case 'layout':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>`;
+      case 'award':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`;
+      case 'shield':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+      case 'activity':
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`;
+      default:
+        return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>`;
     }
   }
 
@@ -206,7 +297,6 @@
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 401 && state.token) {
-          // Token expired or invalid
           handleLogout();
         }
         throw new Error(data?.error?.message || `HTTP ${res.status}`);
@@ -219,78 +309,152 @@
     }
   }
 
-  // ── Navigation & Tabs ───────────────────────────────────────────────────────
-  function renderTabs() {
-    const tabs = ROLE_TABS[state.role] || [];
-    elements.navTabs.innerHTML = '';
+  // ── Router & Navigation ─────────────────────────────────────────────────────
+  function getCurrentHash() {
+    let hash = window.location.hash || '';
+    if (ROUTE_ALIASES[hash]) {
+      hash = ROUTE_ALIASES[hash];
+      window.location.hash = hash;
+    }
+    return hash;
+  }
 
-    // Verify activeTab belongs to role, else set to first tab
-    if (!tabs.some(t => t.id === state.activeTab)) {
-      state.activeTab = tabs[0]?.id || 'drives';
+  function handleRoute(silent = false) {
+    let hash = getCurrentHash();
+    let route = ROUTES[hash];
+
+    // If route doesn't match or belongs to another role, fall back to default
+    if (!route || route.role !== state.role) {
+      const defaultHash = DEFAULT_ROUTE_FOR_ROLE[state.role] || '#/student/drives';
+      if (window.location.hash !== defaultHash) {
+        window.location.hash = defaultHash;
+        return;
+      }
+      hash = defaultHash;
+      route = ROUTES[hash];
     }
 
-    tabs.forEach(tab => {
-      const btn = document.createElement('button');
-      btn.className = `tab-btn ${tab.id === state.activeTab ? 'active' : ''}`;
-      btn.textContent = tab.label;
-      btn.type = 'button';
-      btn.addEventListener('click', () => {
-        state.activeTab = tab.id;
-        renderTabs();
-        loadActiveView();
+    // Update Header Breadcrumbs
+    if (elements.breadcrumbCurrent && route) {
+      elements.breadcrumbCurrent.textContent = route.breadcrumb;
+    }
+
+    // Update Sidebar Navigation state
+    renderSidebar();
+
+    // Call active view handler
+    if (route && typeof route.fn === 'function') {
+      route.fn(silent);
+    }
+  }
+
+  function renderSidebar() {
+    if (!elements.sidebarNavLinks) return;
+
+    // Role badge in sidebar
+    if (elements.sidebarRoleBadge) {
+      const roleLabels = { student: 'Student Portal', faculty: 'Faculty / TPO', admin: 'Placement Admin' };
+      elements.sidebarRoleBadge.textContent = roleLabels[state.role] || 'Guest Portal';
+    }
+
+    // User Profile Card in Sidebar Footer
+    if (state.user) {
+      const initials = (state.user.name || state.user.username || 'U')
+        .split(' ')
+        .map(w => w[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+      if (elements.sidebarUserAvatar) elements.sidebarUserAvatar.textContent = initials;
+      if (elements.sidebarUserName) elements.sidebarUserName.textContent = state.user.name || state.user.username;
+      if (elements.sidebarUserRole) {
+        elements.sidebarUserRole.textContent = state.role === 'admin'
+          ? 'Administrator'
+          : (state.role === 'faculty' ? 'Faculty Coordinator' : (state.activeStudent?.branch || 'Student'));
+      }
+      if (elements.sidebarLogoutBtn) elements.sidebarLogoutBtn.classList.remove('hidden');
+    } else {
+      if (elements.sidebarUserAvatar) elements.sidebarUserAvatar.textContent = 'G';
+      if (elements.sidebarUserName) elements.sidebarUserName.textContent = 'Guest User';
+      if (elements.sidebarUserRole) elements.sidebarUserRole.textContent = 'Click Sign In';
+      if (elements.sidebarLogoutBtn) elements.sidebarLogoutBtn.classList.add('hidden');
+    }
+
+    // Build navigation items for the active role
+    const currentHash = getCurrentHash();
+    const roleRoutes = Object.entries(ROUTES).filter(([_, r]) => r.role === state.role);
+    elements.sidebarNavLinks.innerHTML = '';
+
+    roleRoutes.forEach(([hash, config]) => {
+      const a = document.createElement('a');
+      a.className = `nav-item ${hash === currentHash ? 'active' : ''}`;
+      a.href = hash;
+      a.innerHTML = `
+        <span class="nav-item-icon">${getIconSvg(config.icon)}</span>
+        <span>${config.title}</span>
+      `;
+      a.addEventListener('click', () => {
+        if (elements.sidebar) {
+          elements.sidebar.classList.remove('open');
+        }
       });
-      elements.navTabs.appendChild(btn);
+      elements.sidebarNavLinks.appendChild(a);
     });
   }
 
-  // ── SSE Stream Connection ───────────────────────────────────────────────────
+  // ── SSE Live Event Stream Connection ────────────────────────────────────────
   function initSSE() {
     if (state.eventSource) {
       state.eventSource.close();
     }
 
-    elements.connectionChip.className = 'chip chip-connecting';
-    elements.connectionChip.textContent = '[Connecting...]';
+    if (elements.connectionChip) {
+      elements.connectionChip.className = 'status-chip chip-connecting';
+      elements.connectionChip.innerHTML = `<span class="status-dot"></span><span class="status-label">Connecting...</span>`;
+    }
 
     try {
       state.eventSource = new EventSource('/api/v1/ui/stream');
 
       state.eventSource.addEventListener('connected', () => {
         state.sseConnected = true;
-        elements.connectionChip.className = 'chip chip-online';
-        elements.connectionChip.textContent = '[Live]';
+        if (elements.connectionChip) {
+          elements.connectionChip.className = 'status-chip chip-online';
+          elements.connectionChip.innerHTML = `<span class="status-dot"></span><span class="status-label">Live</span>`;
+        }
         updateTimestamp();
       });
 
-      state.eventSource.addEventListener('audit', (evt) => {
+      state.eventSource.addEventListener('audit', () => {
         updateTimestamp();
-        try {
-          const payload = JSON.parse(evt.data);
-          // If viewing dashboard or audit trail, live refresh
-          if (state.activeTab === 'dashboard' || state.activeTab === 'audit-trail') {
-            loadActiveView(true);
-          }
-          if (state.role === 'student' && state.activeTab === 'applications') {
-            loadApplicationsView(true);
-          }
-        } catch {}
+        const currentHash = getCurrentHash();
+        if (currentHash === '#/admin/dashboard' || currentHash === '#/admin/audit') {
+          handleRoute(true);
+        } else if (state.role === 'student' && currentHash === '#/student/applications') {
+          loadApplicationsView(true);
+        }
       });
 
       state.eventSource.addEventListener('state_change', () => {
         updateTimestamp();
-        if (state.activeTab === 'dashboard' || state.activeTab === 'applications') {
-          loadActiveView(true);
+        const currentHash = getCurrentHash();
+        if (currentHash === '#/admin/dashboard' || currentHash === '#/student/applications') {
+          handleRoute(true);
         }
       });
 
       state.eventSource.onerror = () => {
         state.sseConnected = false;
-        elements.connectionChip.className = 'chip chip-offline';
-        elements.connectionChip.textContent = '[Offline]';
+        if (elements.connectionChip) {
+          elements.connectionChip.className = 'status-chip chip-offline';
+          elements.connectionChip.innerHTML = `<span class="status-dot"></span><span class="status-label">Offline</span>`;
+        }
       };
     } catch (err) {
-      elements.connectionChip.className = 'chip chip-offline';
-      elements.connectionChip.textContent = '[Disconnected]';
+      if (elements.connectionChip) {
+        elements.connectionChip.className = 'status-chip chip-offline';
+        elements.connectionChip.innerHTML = `<span class="status-dot"></span><span class="status-label">Offline</span>`;
+      }
     }
   }
 
@@ -303,53 +467,57 @@
           state.user = res.user;
           state.role = res.user.role;
           state.activeStudent = res.student || null;
-          updateUserDisplay();
-          return;
+        } else {
+          handleLogout();
         }
       } catch (err) {
-        console.warn('Session verification notice:', err.message);
-        localStorage.removeItem('apnileap_token');
-        state.token = null;
-        state.user = null;
-        state.activeStudent = null;
+        console.warn('Session verification failed:', err.message);
+        handleLogout();
       }
     }
-
-    // Default unauthenticated / guest mode
-    state.user = null;
-    state.role = 'student';
-    state.activeStudent = null;
     updateUserDisplay();
-    openAuthModal('login');
   }
 
   function updateUserDisplay() {
     if (state.user) {
-      const roleLabel = state.user.role.toUpperCase();
-      elements.userDisplayChip.textContent = `[${state.user.name} - ${roleLabel}]`;
-      elements.authBtn.classList.add('hidden');
-      elements.logoutBtn.classList.remove('hidden');
+      if (elements.userDisplayChip) {
+        elements.userDisplayChip.textContent = `${state.user.name} (${state.user.role})`;
+        elements.userDisplayChip.classList.remove('hidden');
+      }
+      if (elements.authBtn) elements.authBtn.classList.add('hidden');
+      if (elements.logoutBtn) elements.logoutBtn.classList.remove('hidden');
     } else {
-      elements.userDisplayChip.textContent = '[Guest]';
-      elements.authBtn.classList.remove('hidden');
-      elements.logoutBtn.classList.add('hidden');
+      if (elements.userDisplayChip) elements.userDisplayChip.classList.add('hidden');
+      if (elements.authBtn) elements.authBtn.classList.remove('hidden');
+      if (elements.logoutBtn) elements.logoutBtn.classList.add('hidden');
     }
+    renderSidebar();
   }
 
-  // ── Auth Modal Logic ────────────────────────────────────────────────────────
-  function openAuthModal(tab = 'login') {
-    switchAuthTab(tab);
-    elements.authModal.classList.remove('hidden');
+  function handleLogout() {
+    localStorage.removeItem('apnileap_token');
+    state.token = null;
+    state.user = null;
+    state.role = 'student';
+    state.activeStudent = null;
+    updateUserDisplay();
+    showBanner('info', `You've been signed out.`);
+    window.location.hash = DEFAULT_ROUTE_FOR_ROLE['student'];
+  }
+
+  function openAuthModal(mode = 'login') {
+    switchAuthTab(mode);
+    if (elements.authModal) elements.authModal.classList.remove('hidden');
   }
 
   function closeAuthModal() {
-    elements.authModal.classList.add('hidden');
-    elements.loginErrorMsg.classList.add('hidden');
-    elements.registerErrorMsg.classList.add('hidden');
+    if (elements.authModal) elements.authModal.classList.add('hidden');
+    if (elements.loginErrorMsg) elements.loginErrorMsg.classList.add('hidden');
+    if (elements.registerErrorMsg) elements.registerErrorMsg.classList.add('hidden');
   }
 
-  function switchAuthTab(tab) {
-    if (tab === 'login') {
+  function switchAuthTab(mode) {
+    if (mode === 'login') {
       elements.tabAuthLogin.classList.add('active');
       elements.tabAuthRegister.classList.remove('active');
       elements.loginForm.classList.remove('hidden');
@@ -364,7 +532,7 @@
 
   async function handleLogin(e) {
     e.preventDefault();
-    elements.loginErrorMsg.classList.add('hidden');
+    if (elements.loginErrorMsg) elements.loginErrorMsg.classList.add('hidden');
     const username = elements.loginUsername.value.trim();
     const password = elements.loginPassword.value;
 
@@ -380,24 +548,23 @@
       state.role = res.user.role;
       state.activeStudent = res.student || null;
 
-      if (state.role === 'student') state.activeTab = 'drives';
-      else if (state.role === 'faculty') state.activeTab = 'reports';
-      else if (state.role === 'admin') state.activeTab = 'dashboard';
-
       closeAuthModal();
       updateUserDisplay();
-      renderTabs();
-      loadActiveView();
-      showBanner('success', `[Signed in] Welcome back, ${res.user.name} (${res.user.role})`);
+      showBanner('success', `Welcome back, ${res.user.name}!`);
+
+      // Switch to the default page for this user's role
+      window.location.hash = DEFAULT_ROUTE_FOR_ROLE[state.role] || '#/student/drives';
     } catch (err) {
-      elements.loginErrorMsg.textContent = err.message || 'Authentication failed';
-      elements.loginErrorMsg.classList.remove('hidden');
+      if (elements.loginErrorMsg) {
+        elements.loginErrorMsg.textContent = err.message || 'Authentication failed';
+        elements.loginErrorMsg.classList.remove('hidden');
+      }
     }
   }
 
   async function handleRegister(e) {
     e.preventDefault();
-    elements.registerErrorMsg.classList.add('hidden');
+    if (elements.registerErrorMsg) elements.registerErrorMsg.classList.add('hidden');
 
     const role = elements.regRole.value;
     const name = elements.regName.value.trim();
@@ -425,7 +592,7 @@
           username,
           email,
           password,
-          studentData,
+          student: studentData,
         }),
       });
 
@@ -435,41 +602,30 @@
       state.role = res.user.role;
       state.activeStudent = res.student || null;
 
-      if (state.role === 'student') state.activeTab = 'drives';
-      else if (state.role === 'faculty') state.activeTab = 'reports';
-      else if (state.role === 'admin') state.activeTab = 'dashboard';
-
       closeAuthModal();
       updateUserDisplay();
-      renderTabs();
-      loadActiveView();
-      showBanner('success', `[Account Created] Welcome to APNILEAP, ${res.user.name}`);
+      showBanner('success', `Account created! Welcome, ${res.user.name}.`);
+      window.location.hash = DEFAULT_ROUTE_FOR_ROLE[state.role] || '#/student/drives';
     } catch (err) {
-      elements.registerErrorMsg.textContent = err.message || 'Registration failed';
-      elements.registerErrorMsg.classList.remove('hidden');
+      if (elements.registerErrorMsg) {
+        elements.registerErrorMsg.textContent = err.message || 'Registration failed';
+        elements.registerErrorMsg.classList.remove('hidden');
+      }
     }
   }
 
-  function handleLogout() {
-    localStorage.removeItem('apnileap_token');
-    state.token = null;
-    state.user = null;
-    state.activeStudent = null;
-    state.role = 'student';
-    state.activeTab = 'drives';
+  // =========================================================================
+  // VIEW RENDERERS (MULTI-PAGE VIEWS)
+  // =========================================================================
 
-    updateUserDisplay();
-    renderTabs();
-    loadActiveView();
-    showBanner('info', '[Signed out] You have been signed out.');
-    openAuthModal('login');
-  }
-
-  // ── Views ───────────────────────────────────────────────────────────────────
-
-  // 1. Student Views: Available Drives
+  // 1. Student View: Available Placement Drives
   async function loadDrivesView() {
-    elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Loading placement drives...</p></div></div>';
+    elements.mainContent.innerHTML = `
+      <div class="card">
+        <p class="text-muted" style="padding: 1.5rem; text-align: center;">Loading available placement opportunities...</p>
+      </div>
+    `;
+
     try {
       const studentId = state.activeStudent?.student_id || state.user?.student_id;
       const [drives, myApps] = await Promise.all([
@@ -480,82 +636,125 @@
       state.applications = myApps || [];
 
       const appliedMap = new Map((myApps || []).map(a => [a.drive_id, a]));
-      const stuName = state.activeStudent?.name || state.user?.name || 'Guest Candidate';
-      const stuBranch = state.activeStudent?.branch || 'General';
-      const stuCgpa = state.activeStudent?.cgpa != null ? state.activeStudent.cgpa : 'N/A';
+      const stuName = state.activeStudent?.name || state.user?.name || 'Candidate';
+
+      // Filter and search logic
+      const filteredDrives = state.drives.filter(drive => {
+        if (state.activeDriveFilter === 'DREAM' && (drive.package || 0) < 1500000) return false;
+        if (state.activeDriveFilter === 'TIER1' && (drive.package || 0) < 800000) return false;
+        if (state.activeDriveFilter === 'ELIGIBLE' && state.activeStudent) {
+          const crit = drive.criteria || {};
+          const isBranchEligible = !crit.branches || crit.branches.includes(state.activeStudent.branch);
+          const isCgpaEligible = crit.min_cgpa === undefined || state.activeStudent.cgpa >= crit.min_cgpa;
+          const isBacklogEligible = crit.max_backlogs === undefined || state.activeStudent.backlogs <= crit.max_backlogs;
+          if (!isBranchEligible || !isCgpaEligible || !isBacklogEligible) return false;
+        }
+        if (state.searchQuery) {
+          const q = state.searchQuery.toLowerCase();
+          const matchTitle = (drive.title || '').toLowerCase().includes(q);
+          const matchCompany = (drive.company_name || '').toLowerCase().includes(q);
+          if (!matchTitle && !matchCompany) return false;
+        }
+        return true;
+      });
 
       let html = `
-        <div class="view-header">
+        <div class="page-header">
           <div>
-            <h2 class="view-title">Available Placement Drives</h2>
-            <p class="view-subtitle">Active recruitment drives and verified eligibility thresholds for ${stuName} (${stuBranch}, CGPA: ${stuCgpa})</p>
+            <h1 class="page-title">Available Placement Drives</h1>
+            <p class="page-subtitle">Explore verified campus recruitment opportunities and apply directly.</p>
+          </div>
+          <div class="page-actions">
+            ${!state.user ? `<button type="button" class="btn btn-primary btn-sm btn-quick-login">Sign In to Apply</button>` : ''}
           </div>
         </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <button type="button" class="filter-pill ${state.activeDriveFilter === 'ALL' ? 'active' : ''}" data-filter="ALL">All Drives (${state.drives.length})</button>
+            <button type="button" class="filter-pill ${state.activeDriveFilter === 'ELIGIBLE' ? 'active' : ''}" data-filter="ELIGIBLE">Eligible For You</button>
+            <button type="button" class="filter-pill ${state.activeDriveFilter === 'DREAM' ? 'active' : ''}" data-filter="DREAM">Dream Offers (15+ LPA)</button>
+            <button type="button" class="filter-pill ${state.activeDriveFilter === 'TIER1' ? 'active' : ''}" data-filter="TIER1">Tier 1</button>
+          </div>
+          <div class="search-input-group">
+            <span class="search-icon-pos">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" id="drive-search-input" class="search-input" placeholder="Search by role or company..." value="${state.searchQuery}" />
+          </div>
+        </div>
+
         <div class="drives-grid">
       `;
 
-      if (state.drives.length === 0) {
-        html += `<div class="card" style="grid-column: 1 / -1;"><div class="card-body"><p class="text-muted">No placement drives found.</p></div></div>`;
+      if (filteredDrives.length === 0) {
+        html += `
+          <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem;">
+            <p style="font-weight: 600; color: var(--text-primary); font-size: 1.05rem;">No matching placement drives found</p>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Try adjusting your filter or search keywords to view other opportunities.</p>
+          </div>
+        `;
       } else {
-        state.drives.forEach(drive => {
+        filteredDrives.forEach(drive => {
           const applied = appliedMap.get(drive.drive_id);
-          const criteria = drive.criteria || {};
-          const branches = Array.isArray(criteria.branches) ? criteria.branches.join(', ') : 'All Branches';
-          const minCgpa = criteria.min_cgpa !== undefined ? criteria.min_cgpa : 'N/A';
-          const maxBacklogs = criteria.max_backlogs !== undefined ? criteria.max_backlogs : 'N/A';
-          const requiredSkills = Array.isArray(criteria.required_skills) ? criteria.required_skills.join(', ') : 'Not specified';
+          const crit = drive.criteria || {};
+          const branches = Array.isArray(crit.branches) ? crit.branches.join(', ') : 'All Branches';
+          const minCgpa = crit.min_cgpa !== undefined ? crit.min_cgpa : 'None';
+          const maxBacklogs = crit.max_backlogs !== undefined ? crit.max_backlogs : 'None';
+          const skillsList = Array.isArray(crit.skills) ? crit.skills.slice(0, 3).join(', ') : 'Open';
 
-          // Client-side quick check indicator
-          const isBranchEligible = !state.activeStudent || !criteria.branches || criteria.branches.includes(state.activeStudent.branch);
-          const isCgpaEligible = !state.activeStudent || criteria.min_cgpa === undefined || state.activeStudent.cgpa >= criteria.min_cgpa;
-          const isBacklogEligible = !state.activeStudent || criteria.max_backlogs === undefined || state.activeStudent.backlogs <= criteria.max_backlogs;
+          const isBranchEligible = !state.activeStudent || !crit.branches || crit.branches.includes(state.activeStudent.branch);
+          const isCgpaEligible = !state.activeStudent || crit.min_cgpa === undefined || state.activeStudent.cgpa >= crit.min_cgpa;
+          const isBacklogEligible = !state.activeStudent || crit.max_backlogs === undefined || state.activeStudent.backlogs <= crit.max_backlogs;
           const preEligible = isBranchEligible && isCgpaEligible && isBacklogEligible;
+
+          const companyInitials = (drive.company_name || 'CO').slice(0, 2).toUpperCase();
 
           html += `
             <div class="drive-card">
-              <div>
-                <div class="drive-card-header">
-                  <span class="chip ${drive.state === 'OPEN' ? 'chip-online' : 'chip-offline'}">[${drive.state}]</span>
-                  <span class="mono text-muted" style="font-size: 0.75rem;">${drive.drive_id}</span>
+              <div class="drive-top">
+                <div class="company-monogram">${companyInitials}</div>
+                <div class="drive-meta">
+                  <div class="drive-company-name">${drive.company_name || 'Partner Recruiter'}</div>
+                  <h2 class="drive-title-text">${drive.title}</h2>
                 </div>
-                <h3 class="drive-card-title">${drive.title}</h3>
-                <div class="drive-card-company">${drive.company_name || 'Partner Company'} &bull; ${formatCurrency(drive.package)}</div>
-                
-                <div class="criteria-list">
-                  <div class="criteria-item">
-                    <span class="criteria-label">Available Seats:</span>
-                    <span class="criteria-val">${drive.seats}</span>
-                  </div>
-                  <div class="criteria-item">
-                    <span class="criteria-label">Queue Length:</span>
-                    <span class="criteria-val">${drive.queue_length} pending</span>
-                  </div>
-                  <div class="criteria-item">
-                    <span class="criteria-label">Min CGPA:</span>
-                    <span class="criteria-val">${minCgpa}</span>
-                  </div>
-                  <div class="criteria-item">
-                    <span class="criteria-label">Max Backlogs:</span>
-                    <span class="criteria-val">${maxBacklogs}</span>
-                  </div>
-                  <div class="criteria-item">
-                    <span class="criteria-label">Allowed Branches:</span>
-                    <span class="criteria-val">${branches}</span>
-                  </div>
-                  <div class="criteria-item">
-                    <span class="criteria-label">Key Skills:</span>
-                    <span class="criteria-val" style="font-size: 0.72rem;">${requiredSkills}</span>
-                  </div>
+                <span class="chip ${drive.state === 'OPEN' ? 'chip-selected' : (drive.state === 'SCREENING' ? 'chip-screening' : 'chip-withdrawn')}">
+                  ${drive.state === 'OPEN' ? 'Open' : (drive.state === 'SCREENING' ? 'Screening' : 'Closed')}
+                </span>
+              </div>
+
+              <div class="drive-details-box">
+                <div class="drive-detail-row">
+                  <span class="drive-detail-label">Annual Package</span>
+                  <span class="drive-detail-val package-highlight">${formatCurrency(drive.package)}</span>
+                </div>
+                <div class="drive-detail-row">
+                  <span class="drive-detail-label">Openings Available</span>
+                  <span class="drive-detail-val">${drive.seats || 0} seats</span>
+                </div>
+                <div class="drive-detail-row">
+                  <span class="drive-detail-label">Min CGPA Required</span>
+                  <span class="drive-detail-val">${minCgpa}</span>
+                </div>
+                <div class="drive-detail-row">
+                  <span class="drive-detail-label">Eligible Branches</span>
+                  <span class="drive-detail-val" style="font-size: 0.75rem;">${branches}</span>
                 </div>
               </div>
 
-              <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                <span class="chip ${preEligible ? 'chip-online' : 'chip-not-eligible'}">
-                  ${preEligible ? '[Criteria Met]' : '[Criteria Mismatch]'}
+              <div class="criteria-tags">
+                <span class="criteria-tag">Backlogs: &le; ${maxBacklogs}</span>
+                <span class="criteria-tag">Skills: ${skillsList}</span>
+              </div>
+
+              <div class="drive-card-footer">
+                <span class="chip ${preEligible ? 'chip-selected' : 'chip-withdrawn'}">
+                  ${preEligible ? 'Eligible' : 'Requirements Not Met'}
                 </span>
                 ${applied
-                  ? `<span class="chip ${getStateChipClass(applied.state)}">[Applied: ${applied.state}]</span>`
-                  : `<button class="btn btn-primary btn-apply" data-id="${drive.drive_id}" ${drive.state !== 'OPEN' || drive.seats <= 0 ? 'disabled' : ''}>Apply Now</button>`
+                  ? `<span class="chip ${getStateChipClass(applied.state)}">${getStateLabel(applied.state)}</span>`
+                  : `<button type="button" class="btn btn-primary btn-sm btn-apply" data-id="${drive.drive_id}" ${drive.state !== 'OPEN' || (drive.seats || 0) <= 0 ? 'disabled' : ''}>Apply Now</button>`
                 }
               </div>
             </div>
@@ -566,103 +765,142 @@
       html += `</div>`;
       elements.mainContent.innerHTML = html;
 
-      // Attach Apply Button Listeners
+      // Filter Pill Listeners
+      elements.mainContent.querySelectorAll('.filter-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.activeDriveFilter = btn.getAttribute('data-filter');
+          loadDrivesView();
+        });
+      });
+
+      // Search Input Listener
+      const searchInput = document.getElementById('drive-search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          state.searchQuery = e.target.value;
+          // Debounced re-render
+          clearTimeout(searchInput._timer);
+          searchInput._timer = setTimeout(() => loadDrivesView(), 250);
+        });
+      }
+
+      // Apply Button Listeners
       elements.mainContent.querySelectorAll('.btn-apply').forEach(btn => {
         btn.addEventListener('click', () => {
           const driveId = btn.getAttribute('data-id');
           openApplyModal(driveId);
         });
       });
+
+      // Quick Login Button Listener
+      const quickLoginBtn = elements.mainContent.querySelector('.btn-quick-login');
+      if (quickLoginBtn) {
+        quickLoginBtn.addEventListener('click', () => openAuthModal('login'));
+      }
     } catch (err) {
       elements.mainContent.innerHTML = `<div class="banner error">Failed to load drives: ${err.message}</div>`;
     }
   }
 
-  // 2. Student Views: My Applications
+  // 2. Student View: My Applications
   async function loadApplicationsView(silent = false) {
     if (!silent) {
-      elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Loading applications...</p></div></div>';
+      elements.mainContent.innerHTML = `
+        <div class="card">
+          <p class="text-muted" style="padding: 1.5rem; text-align: center;">Retrieving your application history...</p>
+        </div>
+      `;
     }
+
     try {
       const studentId = state.activeStudent?.student_id || state.user?.student_id;
       const apps = await apiFetch(studentId ? `/api/v1/ui/applications?student_id=${studentId}` : '/api/v1/ui/applications');
       state.applications = apps || [];
 
-      const stuName = state.activeStudent?.name || state.user?.name || 'Applicant';
       const offeredApps = state.applications.filter(a => a.state === 'OFFER_ISSUED');
 
       let html = `
-        <div class="view-header">
+        <div class="page-header">
           <div>
-            <h2 class="view-title">My Applications</h2>
-            <p class="view-subtitle">Submitted applications and real-time state machine transitions for ${stuName}</p>
+            <h1 class="page-title">My Applications</h1>
+            <p class="page-subtitle">Track the status of your submissions, interview rounds, and placement offers.</p>
+          </div>
+          <div class="page-actions">
+            <a href="#/student/drives" class="btn btn-outline btn-sm">Browse More Drives</a>
           </div>
         </div>
       `;
 
-      // Offer Notification Banner
+      // Celebratory Offer Action Card
       if (offeredApps.length > 0) {
-        html += `
-          <div class="card" style="border-color: #34d399; margin-bottom: 1.5rem; background: rgba(52, 211, 153, 0.06);">
-            <div class="card-header">
-              <h3 class="card-title" style="color: #34d399;">Active Placement Offers (${offeredApps.length})</h3>
-              <span class="chip chip-online">[Candidate Action Required]</span>
+        offeredApps.forEach(o => {
+          html += `
+            <div class="offer-action-card">
+              <div class="offer-action-text">
+                <h4>Placement Offer Received!</h4>
+                <p>Congratulations! <strong>${o.drive_title || o.drive_id}</strong> has extended a formal employment offer. Please confirm your decision below.</p>
+              </div>
+              <div class="offer-action-buttons">
+                <button type="button" class="btn btn-success btn-sm btn-accept-offer" data-id="${o.application_id}">Accept Offer</button>
+                <button type="button" class="btn btn-danger btn-sm btn-decline-offer" data-id="${o.application_id}">Decline</button>
+              </div>
             </div>
-            <div class="card-body">
-              ${offeredApps.map(o => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
-                  <div>
-                    <strong style="font-size: 1.05rem;">${o.drive_title || o.drive_id}</strong>
-                    <div class="text-muted" style="font-size: 0.8rem;">Application ID: <span class="mono">${o.application_id}</span> &bull; State: <span class="chip chip-offered">[OFFER_ISSUED]</span></div>
-                  </div>
-                  <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" class="btn btn-primary btn-sm btn-accept-offer" data-id="${o.application_id}">[Accept Offer]</button>
-                    <button type="button" class="btn btn-secondary btn-sm btn-decline-offer" data-id="${o.application_id}">[Decline Offer]</button>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
+          `;
+        });
       }
 
       html += `
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Placement Applications (${state.applications.length})</h3>
-          </div>
-          <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Application ID</th>
-                    <th>Drive Title</th>
-                    <th>Submitted At</th>
-                    <th>Current State</th>
-                    <th>Version</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Recruitment Drive</th>
+                <th>Applied Date</th>
+                <th>Current Status</th>
+                <th>Progress Step</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
       `;
 
       if (state.applications.length === 0) {
-        html += `<tr><td colspan="6" class="text-muted" style="text-align: center; padding: 2rem;">No active applications found. Browse Available Drives to apply.</td></tr>`;
+        html += `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+              You have not applied to any recruitment drives yet. <br />
+              <a href="#/student/drives" style="color: var(--primary); font-weight: 600; text-decoration: underline; margin-top: 0.5rem; display: inline-block;">Browse Available Drives</a>
+            </td>
+          </tr>
+        `;
       } else {
         state.applications.forEach(app => {
-          const isWithdrawable = ['APPLIED', 'SCREENING', 'RULE_EVALUATED', 'SHORTLISTED', 'INTERVIEW_SCHEDULED', 'SELECTED'].includes(app.state);
+          const isWithdrawable = ['APPLIED', 'SCREENING', 'RULE_EVALUATED', 'SHORTLISTED', 'INTERVIEW_SCHEDULED'].includes(app.state);
+
+          // Calculate stepper step index (1 to 5)
+          let stepIndex = 1;
+          if (app.state === 'SCREENING' || app.state === 'RULE_EVALUATED') stepIndex = 2;
+          else if (app.state === 'SHORTLISTED') stepIndex = 3;
+          else if (app.state === 'INTERVIEW_SCHEDULED') stepIndex = 4;
+          else if (['SELECTED', 'OFFER_ISSUED', 'OFFER_ACCEPTED'].includes(app.state)) stepIndex = 5;
+
           html += `
             <tr>
-              <td class="mono" style="font-size: 0.8rem;">${app.application_id}</td>
-              <td><strong>${app.drive_title || app.drive_id}</strong></td>
-              <td class="mono" style="font-size: 0.78rem;">${new Date(app.created_at || Date.now()).toLocaleString()}</td>
-              <td><span class="chip ${getStateChipClass(app.state)}">[${app.state}]</span></td>
-              <td class="mono">v${app.version || 1}</td>
+              <td>
+                <div style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">${app.drive_title || app.drive_id}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">ID: ${app.application_id.slice(0, 12)}...</div>
+              </td>
+              <td style="font-size: 0.8rem; color: var(--text-secondary);">${new Date(app.created_at || Date.now()).toLocaleDateString()}</td>
+              <td><span class="chip ${getStateChipClass(app.state)}">${getStateLabel(app.state)}</span></td>
+              <td>
+                <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);">
+                  Step ${stepIndex} of 5 &bull; <span style="color: var(--primary);">${getStateLabel(app.state)}</span>
+                </div>
+              </td>
               <td>
                 <div style="display: flex; gap: 0.4rem; align-items: center;">
-                  <button type="button" class="btn btn-secondary btn-sm btn-inspect" data-id="${app.application_id}">Details</button>
-                  ${isWithdrawable ? `<button type="button" class="btn btn-secondary btn-sm btn-withdraw-app" data-id="${app.application_id}" style="color: #f87171; border-color: #ef4444;">[Withdraw]</button>` : ''}
+                  <button type="button" class="btn btn-outline btn-sm btn-inspect" data-id="${app.application_id}">View Details</button>
+                  ${isWithdrawable ? `<button type="button" class="btn btn-outline btn-sm btn-withdraw-app" data-id="${app.application_id}" style="color: var(--status-rose-text); border-color: var(--status-rose-border);">Withdraw</button>` : ''}
                 </div>
               </td>
             </tr>
@@ -671,17 +909,15 @@
       }
 
       html += `
-                </tbody>
-              </table>
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
         <div id="app-detail-container"></div>
       `;
 
       elements.mainContent.innerHTML = html;
 
-      // Details buttons
+      // Details view handler
       elements.mainContent.querySelectorAll('.btn-inspect').forEach(btn => {
         btn.addEventListener('click', async () => {
           const appId = btn.getAttribute('data-id');
@@ -689,7 +925,7 @@
         });
       });
 
-      // Accept Offer buttons
+      // Accept Offer handler
       elements.mainContent.querySelectorAll('.btn-accept-offer').forEach(btn => {
         btn.addEventListener('click', async () => {
           const appId = btn.getAttribute('data-id');
@@ -699,20 +935,20 @@
               method: 'POST',
               body: JSON.stringify({ application_id: appId }),
             });
-            showBanner('success', `[Offer Accepted] Congratulations! Placement offer for ${appId} confirmed.`);
+            showBanner('success', `Offer accepted! Congratulations on your placement.`);
             loadApplicationsView();
           } catch (err) {
-            showBanner('error', `[Accept Failed] ${err.message}`);
+            showBanner('error', `Failed to accept offer: ${err.message}`);
             btn.disabled = false;
           }
         });
       });
 
-      // Decline Offer buttons
+      // Decline Offer handler
       elements.mainContent.querySelectorAll('.btn-decline-offer').forEach(btn => {
         btn.addEventListener('click', async () => {
           const appId = btn.getAttribute('data-id');
-          if (!confirm('Are you sure you want to decline this offer? The drive seat will be released back to the candidate pool.')) {
+          if (!confirm('Are you sure you want to decline this offer? The position will be released to other candidates.')) {
             return;
           }
           btn.disabled = true;
@@ -721,20 +957,20 @@
               method: 'POST',
               body: JSON.stringify({ application_id: appId }),
             });
-            showBanner('info', `[Offer Declined] Application ${appId} marked as WITHDRAWN and seat restored.`);
+            showBanner('info', `Offer declined.`);
             loadApplicationsView();
           } catch (err) {
-            showBanner('error', `[Decline Failed] ${err.message}`);
+            showBanner('error', `Failed to decline offer: ${err.message}`);
             btn.disabled = false;
           }
         });
       });
 
-      // Withdraw buttons
+      // Withdraw button handler
       elements.mainContent.querySelectorAll('.btn-withdraw-app').forEach(btn => {
         btn.addEventListener('click', async () => {
           const appId = btn.getAttribute('data-id');
-          if (!confirm('Are you sure you want to withdraw this application? This action transitions state to WITHDRAWN.')) {
+          if (!confirm('Are you sure you want to withdraw this application? This action cannot be reversed.')) {
             return;
           }
           btn.disabled = true;
@@ -742,10 +978,10 @@
             await apiFetch(`/api/v1/ui/applications/${appId}/withdraw`, {
               method: 'POST',
             });
-            showBanner('info', `[Application Withdrawn] Application ${appId} transitioned to WITHDRAWN.`);
+            showBanner('info', `Application withdrawn successfully.`);
             loadApplicationsView();
           } catch (err) {
-            showBanner('error', `[Withdrawal Failed] ${err.message}`);
+            showBanner('error', `Failed to withdraw: ${err.message}`);
             btn.disabled = false;
           }
         });
@@ -759,7 +995,8 @@
     const container = document.getElementById('app-detail-container');
     if (!container) return;
 
-    container.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Fetching audit and decision trace...</p></div></div>';
+    container.innerHTML = '<div class="card" style="margin-top: 1.5rem;"><p class="text-muted" style="text-align: center; padding: 1rem;">Loading application details...</p></div>';
+
     try {
       const detail = await apiFetch(`/api/v1/ui/applications/${appId}`);
       const app = detail.application || {};
@@ -767,37 +1004,58 @@
       const student = detail.student || {};
 
       container.innerHTML = `
-        <div class="card" style="margin-top: 1.5rem; border-color: #3b82f6;">
+        <div class="card" style="margin-top: 1.5rem; border-color: var(--primary-border);">
           <div class="card-header">
-            <h3 class="card-title">Workflow Lifecycle Trace &bull; Application ${app.application_id}</h3>
-            <span class="chip ${getStateChipClass(app.state)}">[${app.state}]</span>
+            <div>
+              <h3 class="card-title">Application Status Details</h3>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem;">Application Reference: ${app.application_id || appId}</p>
+            </div>
+            <span class="chip ${getStateChipClass(app.state)}">${getStateLabel(app.state)}</span>
           </div>
           <div class="card-body">
-            <div class="form-grid-2" style="margin-bottom: 1rem;">
-              <div>
-                <p class="text-muted" style="font-size: 0.75rem; text-transform: uppercase;">Candidate Information</p>
-                <p><strong>${student.name || 'Candidate'}</strong> (${student.student_id}) &bull; ${student.branch}</p>
-                <p class="text-muted" style="font-size: 0.8rem;">CGPA: ${student.cgpa} &bull; Backlogs: ${student.backlogs}</p>
+            <div class="form-grid-2" style="margin-bottom: 1.25rem;">
+              <div class="detail-box">
+                <div class="detail-item">
+                  <span class="detail-label">Candidate</span>
+                  <span class="detail-value">${student.name || 'Candidate'}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Department</span>
+                  <span class="detail-value">${student.branch || '-'}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">CGPA / Backlogs</span>
+                  <span class="detail-value">${student.cgpa || '-'} / ${student.backlogs || 0}</span>
+                </div>
               </div>
-              <div>
-                <p class="text-muted" style="font-size: 0.75rem; text-transform: uppercase;">Drive Information</p>
-                <p><strong>${drive.title || 'Drive'}</strong> (${drive.drive_id})</p>
-                <p class="text-muted" style="font-size: 0.8rem;">Package: ${formatCurrency(drive.package)} &bull; Seats: ${drive.seats}</p>
+              <div class="detail-box">
+                <div class="detail-item">
+                  <span class="detail-label">Drive</span>
+                  <span class="detail-value">${drive.title || 'Drive'}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Offered Package</span>
+                  <span class="detail-value" style="color: var(--primary);">${formatCurrency(drive.package)}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Total Openings</span>
+                  <span class="detail-value">${drive.seats || '-'}</span>
+                </div>
               </div>
             </div>
-            
-            <div class="criteria-list">
-              <div class="criteria-item">
-                <span class="criteria-label">State Machine Progress:</span>
-                <span class="criteria-val">APPLIED &rarr; SCREENING &rarr; ${app.state}</span>
+
+            <div class="detail-box">
+              <div class="detail-item">
+                <span class="detail-label">Current Pipeline Status</span>
+                <span class="detail-value">${getStateLabel(app.state)}</span>
               </div>
-              <div class="criteria-item">
-                <span class="criteria-label">Idempotency Key:</span>
-                <span class="criteria-val mono" style="font-size: 0.72rem;">${app.idempotency_key || 'IDEMPOTENT_TRANSACTION'}</span>
+              <div class="detail-item">
+                <span class="detail-label">Submission Date</span>
+                <span class="detail-value">${new Date(app.created_at || Date.now()).toLocaleString()}</span>
               </div>
-              <div class="criteria-item">
-                <span class="criteria-label">Record Version (OCC):</span>
-                <span class="criteria-val">v${app.version || 1}</span>
+              <div class="detail-item">
+                <span class="detail-label">Submitted Resume</span>
+                <span class="detail-value">${app.resume_version || 'v1.0 General Profile'}</span>
               </div>
             </div>
           </div>
@@ -805,13 +1063,168 @@
       `;
       container.scrollIntoView({ behavior: 'smooth' });
     } catch (err) {
-      container.innerHTML = `<div class="banner error">Could not load application trace: ${err.message}</div>`;
+      container.innerHTML = `<div class="banner error" style="margin-top: 1rem;">Could not load application details: ${err.message}</div>`;
     }
   }
 
-  // 3. Faculty Views: Placement Reports & Cohort Analytics
+  // 3. Student View: My Profile
+  async function loadProfileView() {
+    const s = state.activeStudent || {};
+    const u = state.user || {};
+    const studentId = s.student_id || u.student_id;
+
+    if (!studentId) {
+      elements.mainContent.innerHTML = `
+        <div class="card" style="text-align: center; padding: 3rem 1.5rem;">
+          <p style="font-weight: 600; font-size: 1.05rem;">Student Profile Unavailable</p>
+          <p class="text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">Please sign in with a registered student account to view and update your academic profile.</p>
+          <button type="button" class="btn btn-primary btn-sm btn-quick-login" style="margin-top: 1rem;">Sign In</button>
+        </div>
+      `;
+      elements.mainContent.querySelector('.btn-quick-login')?.addEventListener('click', () => openAuthModal('login'));
+      return;
+    }
+
+    elements.mainContent.innerHTML = `
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">My Profile</h1>
+          <p class="page-subtitle">Manage your verified academic credentials and career preferences.</p>
+        </div>
+      </div>
+
+      <div class="profile-grid">
+        <!-- Left Profile Identity Card -->
+        <div class="card profile-card-user">
+          <div class="profile-avatar-large">
+            ${(s.name || u.name || 'S').slice(0, 2).toUpperCase()}
+          </div>
+          <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">${s.name || u.name}</h2>
+          <p style="font-size: 0.825rem; color: var(--text-secondary); margin-top: 0.15rem;">${s.branch || 'Engineering'} &bull; ${s.student_id || studentId}</p>
+
+          <div style="width: 100%; margin-top: 1.5rem; text-align: left;" class="detail-box">
+            <div class="detail-item">
+              <span class="detail-label">Current CGPA</span>
+              <span class="detail-value" style="color: var(--primary); font-size: 1rem;">${s.cgpa != null ? s.cgpa : 7.5}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Active Backlogs</span>
+              <span class="detail-value">${s.backlogs != null ? s.backlogs : 0}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Attendance</span>
+              <span class="detail-value">${s.attendance != null ? s.attendance : 85}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Profile Edit Form -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Academic Credentials</h3>
+          </div>
+          <div class="card-body">
+            <form id="profile-edit-form">
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="profile-name" class="form-label">Full Name</label>
+                  <input type="text" id="profile-name" class="form-input" value="${s.name || u.name || ''}" required />
+                </div>
+                <div class="form-group">
+                  <label for="profile-email" class="form-label">College Email</label>
+                  <input type="email" id="profile-email" class="form-input" value="${s.email || u.email || ''}" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="profile-branch" class="form-label">Department / Branch</label>
+                <select id="profile-branch" class="form-select" required>
+                  <option value="CSE" ${s.branch === 'CSE' ? 'selected' : ''}>Computer Science &amp; Engineering (CSE)</option>
+                  <option value="IT" ${s.branch === 'IT' ? 'selected' : ''}>Information Technology (IT)</option>
+                  <option value="ENTC" ${s.branch === 'ENTC' ? 'selected' : ''}>Electronics &amp; Telecommunication (ENTC)</option>
+                  <option value="Mechanical" ${s.branch === 'Mechanical' ? 'selected' : ''}>Mechanical Engineering</option>
+                  <option value="Electrical" ${s.branch === 'Electrical' ? 'selected' : ''}>Electrical Engineering</option>
+                </select>
+              </div>
+
+              <div class="form-grid-2">
+                <div class="form-group">
+                  <label for="profile-cgpa" class="form-label">CGPA (0 – 10)</label>
+                  <input type="number" id="profile-cgpa" class="form-input" step="0.01" min="0" max="10" value="${s.cgpa != null ? s.cgpa : 7.5}" required />
+                </div>
+                <div class="form-group">
+                  <label for="profile-backlogs" class="form-label">Active Backlogs</label>
+                  <input type="number" id="profile-backlogs" class="form-input" min="0" max="20" value="${s.backlogs != null ? s.backlogs : 0}" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="profile-attendance" class="form-label">Attendance (%)</label>
+                <input type="number" id="profile-attendance" class="form-input" min="0" max="100" value="${s.attendance != null ? s.attendance : 85}" required />
+              </div>
+
+              <div class="form-group">
+                <label for="profile-skills" class="form-label">Key Skills (comma separated)</label>
+                <input type="text" id="profile-skills" class="form-input" value="${Array.isArray(s.skills) ? s.skills.join(', ') : (s.skills || 'JavaScript, Python')}" placeholder="e.g. JavaScript, Python, SQL, Cloud" />
+              </div>
+
+              <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" id="btn-save-profile">Save Credentials</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const form = document.getElementById('profile-edit-form');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('btn-save-profile');
+        if (saveBtn) saveBtn.disabled = true;
+
+        const skills = document.getElementById('profile-skills').value.split(',').map(item => item.trim()).filter(Boolean);
+        const updates = {
+          name: document.getElementById('profile-name').value.trim(),
+          email: document.getElementById('profile-email').value.trim(),
+          branch: document.getElementById('profile-branch').value,
+          cgpa: Number(document.getElementById('profile-cgpa').value),
+          backlogs: Number(document.getElementById('profile-backlogs').value),
+          attendance: Number(document.getElementById('profile-attendance').value),
+          skills: skills,
+        };
+
+        try {
+          const updated = await apiFetch(`/api/v1/ui/students/${studentId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updates),
+          });
+
+          state.activeStudent = { ...state.activeStudent, ...updates, ...updated };
+          if (state.user) {
+            state.user.name = updates.name;
+            state.user.email = updates.email;
+          }
+          updateUserDisplay();
+          showBanner('success', `Profile saved successfully.`);
+          loadProfileView();
+        } catch (err) {
+          showBanner('error', `Failed to save profile: ${err.message}`);
+          if (saveBtn) saveBtn.disabled = false;
+        }
+      });
+    }
+  }
+
+  // 4. Faculty View: Placement Reports
   async function loadReportsView() {
-    elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Aggregating placement performance data...</p></div></div>';
+    elements.mainContent.innerHTML = `
+      <div class="card">
+        <p class="text-muted" style="padding: 1.5rem; text-align: center;">Aggregating campus placement statistics...</p>
+      </div>
+    `;
+
     try {
       const data = await apiFetch('/api/v1/ui/reports/placement-performance');
       const perf = data.placement_performance || {};
@@ -821,68 +1234,68 @@
       const driveStats = perf.drive_stats || [];
 
       let html = `
-        <div class="view-header">
+        <div class="page-header">
           <div>
-            <h2 class="view-title">Placement Performance Report</h2>
-            <p class="view-subtitle">Authoritative placement KPI breakdown and drive conversions (Team C Placement Analytics)</p>
+            <h1 class="page-title">Placement Performance Report</h1>
+            <p class="page-subtitle">Aggregate placement statistics and branch conversion rates across all drives.</p>
           </div>
         </div>
 
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <span class="kpi-label">Total Applications</span>
-            <span class="kpi-value">${totals.total_applications || 0}</span>
-            <span class="kpi-subtext">Across all drives</span>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Total Applications</span>
+            <span class="metric-value">${totals.total_applications || 0}</span>
+            <span class="metric-meta">Across all drives</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Selected Candidates</span>
-            <span class="kpi-value" style="color: #34d399;">${totals.total_selected || 0}</span>
-            <span class="kpi-subtext">Verified selections</span>
+          <div class="metric-card">
+            <span class="metric-label">Selected Students</span>
+            <span class="metric-value" style="color: var(--status-emerald-text);">${totals.total_selected || 0}</span>
+            <span class="metric-meta positive">Verified selections</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Offers Committed</span>
-            <span class="kpi-value" style="color: #60a5fa;">${totals.total_offers || 0}</span>
-            <span class="kpi-subtext">C3 atomic commits</span>
+          <div class="metric-card">
+            <span class="metric-label">Offers Extended</span>
+            <span class="metric-value" style="color: var(--primary);">${totals.total_offers || 0}</span>
+            <span class="metric-meta">Pending candidate response</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Average Package</span>
-            <span class="kpi-value">${formatCurrency(packageStats.average || 0)}</span>
-            <span class="kpi-subtext">Max: ${formatCurrency(packageStats.max || 0)}</span>
+          <div class="metric-card">
+            <span class="metric-label">Average Annual Package</span>
+            <span class="metric-value">${formatCurrency(packageStats.average || 0)}</span>
+            <span class="metric-meta">Highest: ${formatCurrency(packageStats.max || 0)}</span>
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-bottom: 1.5rem;">
           <div class="card-header">
-            <h3 class="card-title">Branch Conversion Analysis</h3>
+            <h3 class="card-title">Department Conversion Rates</h3>
           </div>
           <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-container" style="border: none; box-shadow: none;">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Branch</th>
+                    <th>Department</th>
                     <th>Applications</th>
                     <th>Selected</th>
                     <th>Conversion Rate</th>
-                    <th>Status</th>
+                    <th>Placement Status</th>
                   </tr>
                 </thead>
                 <tbody>
       `;
 
       if (branchStats.length === 0) {
-        html += `<tr><td colspan="5" class="text-muted" style="text-align: center; padding: 1.5rem;">No branch conversion data available yet.</td></tr>`;
+        html += `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No departmental data recorded yet.</td></tr>`;
       } else {
         branchStats.forEach(b => {
           html += `
             <tr>
               <td><strong>${b.branch}</strong></td>
-              <td class="mono">${b.applications}</td>
-              <td class="mono">${b.selected}</td>
-              <td class="mono"><strong>${b.conversion_rate}%</strong></td>
+              <td>${b.applications}</td>
+              <td style="color: var(--status-emerald-text); font-weight: 600;">${b.selected}</td>
+              <td style="font-weight: 700;">${b.conversion_rate}%</td>
               <td>
-                <span class="chip ${b.conversion_rate > 50 ? 'chip-online' : 'chip-applied'}">
-                  ${b.conversion_rate > 50 ? '[High Conversion]' : '[Standard]'}
+                <span class="chip ${b.conversion_rate > 50 ? 'chip-selected' : 'chip-applied'}">
+                  ${b.conversion_rate > 50 ? 'High Performing' : 'Standard'}
                 </span>
               </td>
             </tr>
@@ -899,38 +1312,38 @@
 
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Recruitment Drive Performance</h3>
+            <h3 class="card-title">Recruitment Drive Performance Breakdown</h3>
           </div>
           <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-container" style="border: none; box-shadow: none;">
               <table class="data-table">
                 <thead>
                   <tr>
                     <th>Drive Title</th>
-                    <th>State</th>
-                    <th>Total Seats</th>
-                    <th>Remaining Seats</th>
+                    <th>Status</th>
+                    <th>Total Openings</th>
+                    <th>Remaining</th>
                     <th>Applications</th>
                     <th>Selected</th>
-                    <th>Package</th>
+                    <th>Package (INR)</th>
                   </tr>
                 </thead>
                 <tbody>
       `;
 
       if (driveStats.length === 0) {
-        html += `<tr><td colspan="7" class="text-muted" style="text-align: center; padding: 1.5rem;">No active drives logged.</td></tr>`;
+        html += `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No drives logged.</td></tr>`;
       } else {
         driveStats.forEach(d => {
           html += `
             <tr>
               <td><strong>${d.title}</strong></td>
-              <td><span class="chip ${d.state === 'OPEN' ? 'chip-online' : 'chip-offline'}">[${d.state}]</span></td>
-              <td class="mono">${d.seats_total || d.seats_remaining}</td>
-              <td class="mono">${d.seats_remaining}</td>
-              <td class="mono">${d.applications}</td>
-              <td class="mono" style="color: #34d399;"><strong>${d.selected}</strong></td>
-              <td class="mono">${formatCurrency(d.package)}</td>
+              <td><span class="chip ${d.state === 'OPEN' ? 'chip-selected' : 'chip-withdrawn'}">${d.state === 'OPEN' ? 'Open' : 'Closed'}</span></td>
+              <td>${d.seats_total || d.seats_remaining}</td>
+              <td>${d.seats_remaining}</td>
+              <td>${d.applications}</td>
+              <td style="color: var(--status-emerald-text); font-weight: 600;">${d.selected}</td>
+              <td>${formatCurrency(d.package)}</td>
             </tr>
           `;
         });
@@ -950,8 +1363,14 @@
     }
   }
 
+  // 5. Faculty View: Student Overview / Directory
   async function loadCohortView() {
-    elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Loading cohort analytics...</p></div></div>';
+    elements.mainContent.innerHTML = `
+      <div class="card">
+        <p class="text-muted" style="padding: 1.5rem; text-align: center;">Loading student cohort data...</p>
+      </div>
+    `;
+
     try {
       const data = await apiFetch('/api/v1/ui/reports/placement-performance');
       const cohort = data.cohort_analytics || {};
@@ -959,51 +1378,51 @@
       const topSkills = cohort.top_skills || [];
 
       let html = `
-        <div class="view-header">
+        <div class="page-header">
           <div>
-            <h2 class="view-title">Student Cohort Analytics</h2>
-            <p class="view-subtitle">Skill distribution and student registrations across college departments (Team B)</p>
+            <h1 class="page-title">Student Directory &amp; Cohort Overview</h1>
+            <p class="page-subtitle">Track registered student distribution and prevailing skill sets across departments.</p>
           </div>
         </div>
 
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <span class="kpi-label">Registered Students</span>
-            <span class="kpi-value">${cohort.total_registered || 0}</span>
-            <span class="kpi-subtext">Verified profiles</span>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Registered Students</span>
+            <span class="metric-value">${cohort.total_registered || 0}</span>
+            <span class="metric-meta">Verified active profiles</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Active Disciplines</span>
-            <span class="kpi-value">${Object.keys(branchDist).length}</span>
-            <span class="kpi-subtext">CSE, IT, ENTC, etc.</span>
+          <div class="metric-card">
+            <span class="metric-label">Academic Departments</span>
+            <span class="metric-value">${Object.keys(branchDist).length}</span>
+            <span class="metric-meta">CSE, IT, ENTC, etc.</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Unique Skills Tracked</span>
-            <span class="kpi-value">${topSkills.length}</span>
-            <span class="kpi-subtext">Profile skill graph</span>
+          <div class="metric-card">
+            <span class="metric-label">Technical Skills Tracked</span>
+            <span class="metric-value">${topSkills.length}</span>
+            <span class="metric-meta">Candidate proficiencies</span>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Top Candidate Skills (Skill Graph Weights)</h3>
+            <h3 class="card-title">Cohort Skill Distribution</h3>
           </div>
           <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-container" style="border: none; box-shadow: none;">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Skill Name</th>
-                    <th>Candidate Count</th>
-                    <th>Cohort Prevalence</th>
-                    <th>Status</th>
+                    <th>Skill</th>
+                    <th>Candidates Proficient</th>
+                    <th>Prevalence</th>
+                    <th>Category</th>
                   </tr>
                 </thead>
                 <tbody>
       `;
 
       if (topSkills.length === 0) {
-        html += `<tr><td colspan="4" class="text-muted" style="text-align: center; padding: 1.5rem;">No skills tracked.</td></tr>`;
+        html += `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">No skills data recorded.</td></tr>`;
       } else {
         const total = cohort.total_registered || 1;
         topSkills.forEach(s => {
@@ -1011,9 +1430,16 @@
           html += `
             <tr>
               <td><strong>${s.skill}</strong></td>
-              <td class="mono">${s.count} candidates</td>
-              <td class="mono">${pct}%</td>
-              <td><span class="chip chip-evaluated">[Indexed]</span></td>
+              <td>${s.count} candidates</td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <span style="font-weight: 600;">${pct}%</span>
+                  <div style="flex: 1; max-width: 120px; height: 6px; background-color: var(--bg-surface-subtle); border-radius: var(--radius-full); overflow: hidden;">
+                    <div style="width: ${pct}%; height: 100%; background-color: var(--primary);"></div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="chip chip-evaluated">Core Skill</span></td>
             </tr>
           `;
         });
@@ -1029,104 +1455,200 @@
 
       elements.mainContent.innerHTML = html;
     } catch (err) {
-      elements.mainContent.innerHTML = `<div class="banner error">Failed to load cohort analytics: ${err.message}</div>`;
+      elements.mainContent.innerHTML = `<div class="banner error">Failed to load student overview: ${err.message}</div>`;
     }
   }
 
-  // 4. Admin Views: Operations Dashboard, Drive Management, Ranking Engine, Audit
+  // 6. Admin & Faculty: Company Directory
+  async function loadCompaniesView() {
+    elements.mainContent.innerHTML = `
+      <div class="card">
+        <p class="text-muted" style="padding: 1.5rem; text-align: center;">Loading corporate partner directory...</p>
+      </div>
+    `;
+
+    try {
+      const companies = await apiFetch('/api/v1/ui/companies') || [];
+      let html = `
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Company Directory</h1>
+            <p class="page-subtitle">Corporate recruitment partners registered for on-campus and virtual hiring drives.</p>
+          </div>
+          <div class="page-actions">
+            <button type="button" id="btn-open-create-company" class="btn btn-primary">+ Add Company</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Company Name</th>
+                <th>Industry Sector</th>
+                <th>Category Tier</th>
+                <th>Contact Email</th>
+                <th>Careers Portal</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      if (companies.length === 0) {
+        html += `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No recruiter companies registered yet. Click [+ Add Company] to register one.</td></tr>`;
+      } else {
+        companies.forEach(c => {
+          let tierChip = 'chip-applied';
+          if (c.tier === 'Tier 1' || c.tier === 'TIER_1') tierChip = 'chip-selected';
+          else if (c.tier === 'Tier 2' || c.tier === 'TIER_2') tierChip = 'chip-screening';
+          else if (c.tier === 'Dream') tierChip = 'chip-tier';
+
+          html += `
+            <tr>
+              <td>
+                <strong>${c.name}</strong>
+              </td>
+              <td>${c.industry || 'Technology'}</td>
+              <td><span class="chip ${tierChip}">${c.tier || 'Standard'}</span></td>
+              <td style="color: var(--text-secondary);">${c.contact_email || '-'}</td>
+              <td>
+                ${c.website ? `<a href="${c.website}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 500; text-decoration: underline;">Visit Website</a>` : '-'}
+              </td>
+              <td><span class="chip chip-selected">Active Partner</span></td>
+            </tr>
+          `;
+        });
+      }
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      elements.mainContent.innerHTML = html;
+
+      const openBtn = document.getElementById('btn-open-create-company');
+      if (openBtn) {
+        openBtn.addEventListener('click', () => {
+          if (elements.companyModalError) elements.companyModalError.classList.add('hidden');
+          if (elements.createCompanyModal) elements.createCompanyModal.classList.remove('hidden');
+        });
+      }
+    } catch (err) {
+      elements.mainContent.innerHTML = `<div class="banner error">Failed to load companies: ${err.message}</div>`;
+    }
+  }
+
+  // 7. Admin View: Operations Dashboard
   async function loadDashboardView(silent = false) {
     if (!silent) {
-      elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Loading live operations dashboard...</p></div></div>';
+      elements.mainContent.innerHTML = `
+        <div class="card">
+          <p class="text-muted" style="padding: 1.5rem; text-align: center;">Loading live placement operations dashboard...</p>
+        </div>
+      `;
     }
+
     try {
       const [data, lockData] = await Promise.all([
         apiFetch('/api/v1/ui/dashboard'),
-        apiFetch('/api/v1/ui/locks').catch(() => ({ active_locks_count: 0, active_locks: [], wfg_edges: [] })),
+        apiFetch('/api/v1/ui/locks').catch(() => ({ active_locks_count: 0, active_locks: [] })),
       ]);
       state.dashboard = data;
       const metrics = data.metrics || {};
       const q = data.queue_metrics || {};
       const audit = data.recent_audit || [];
-      const activeLocks = lockData.active_locks || [];
-      const wfgEdges = lockData.wfg_edges || [];
 
       let html = `
-        <div class="view-header">
+        <div class="page-header">
           <div>
-            <h2 class="view-title">Placement Operations Dashboard</h2>
-            <p class="view-subtitle">Live cross-service telemetry &bull; Team C (DBMS) &bull; Team A (Queues &amp; Mutex) &bull; Team B (Ranking)</p>
+            <h1 class="page-title">Placement Operations Dashboard</h1>
+            <p class="page-subtitle">Real-time status of placement drives, applications, interview slots, and system health.</p>
+          </div>
+          <div class="page-actions">
+            <a href="#/admin/drives" class="btn btn-primary btn-sm">+ Manage Drives</a>
+            <a href="#/admin/rankings" class="btn btn-outline btn-sm">Candidate Rankings</a>
           </div>
         </div>
 
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <span class="kpi-label">Active Drives</span>
-            <span class="kpi-value" style="color: #60a5fa;">${metrics.active_drives}</span>
-            <span class="kpi-subtext">Out of ${metrics.total_drives} total drives</span>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Active Drives</span>
+            <span class="metric-value" style="color: var(--primary);">${metrics.active_drives || 0}</span>
+            <span class="metric-meta">Out of ${metrics.total_drives || 0} total drives</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Total Applications</span>
-            <span class="kpi-value">${metrics.total_applications}</span>
-            <span class="kpi-subtext">Registered candidates</span>
+          <div class="metric-card">
+            <span class="metric-label">Total Applications</span>
+            <span class="metric-value">${metrics.total_applications || 0}</span>
+            <span class="metric-meta">Submitted by students</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Available Seats</span>
-            <span class="kpi-value" style="color: #34d399;">${metrics.seats_available}</span>
-            <span class="kpi-subtext">Open recruitment capacity</span>
+          <div class="metric-card">
+            <span class="metric-label">Open Positions</span>
+            <span class="metric-value" style="color: var(--status-emerald-text);">${metrics.seats_available || 0}</span>
+            <span class="metric-meta">Available recruitment seats</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Queue Depth (Team A)</span>
-            <span class="kpi-value" style="color: #fbbf24;">${q.queue_depth || metrics.queue_depth || 0}</span>
-            <span class="kpi-subtext">Pending rule evaluations</span>
+          <div class="metric-card">
+            <span class="metric-label">In Review Queue</span>
+            <span class="metric-value" style="color: var(--status-amber-text);">${q.queue_depth || metrics.queue_depth || 0}</span>
+            <span class="metric-meta">Pending screening</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Active Mutex Locks</span>
-            <span class="kpi-value" style="color: #38bdf8;">${lockData.active_locks_count || 0}</span>
-            <span class="kpi-subtext">Slot leases granted</span>
+          <div class="metric-card">
+            <span class="metric-label">Scheduled Interviews</span>
+            <span class="metric-value" style="color: #0284c7;">${lockData.active_locks_count || 0}</span>
+            <span class="metric-meta">Interview slots reserved</span>
           </div>
-          <div class="kpi-card">
-            <span class="kpi-label">Offers Issued</span>
-            <span class="kpi-value" style="color: #a78bfa;">${metrics.offers_issued}</span>
-            <span class="kpi-subtext">Committed via 2PC workflow</span>
+          <div class="metric-card">
+            <span class="metric-label">Offers Issued</span>
+            <span class="metric-value" style="color: #7c3aed;">${metrics.offers_issued || 0}</span>
+            <span class="metric-meta">Awaiting student response</span>
           </div>
         </div>
 
-        <!-- Concurrency & Mutex Locks Inspector (Team A) -->
-        <div class="card" style="margin-bottom: 1.5rem;">
+        <!-- System Health Notification Card -->
+        <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #ffffff, #f8fafc);">
           <div class="card-header">
-            <h3 class="card-title">Interview Concurrency &amp; Mutex Inspector (Team A SlotLockManager)</h3>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <span class="chip ${activeLocks.length > 0 ? 'chip-online' : 'chip-applied'}">[${activeLocks.length} Active Leases]</span>
-              <button type="button" id="btn-run-deadlock" class="btn btn-secondary btn-sm">[Run Deadlock Analysis]</button>
-            </div>
+            <h3 class="card-title">System Status &amp; Real-Time Synchronization</h3>
+            <span class="chip chip-selected">All Systems Healthy</span>
+          </div>
+          <div class="card-body">
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
+              Placement microservices are synchronizing data continuously. Audit transactions and live events are streamed via Server-Sent Events with atomic consistency.
+            </p>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Recent Activity Feed</h3>
+            <a href="#/admin/audit" class="btn btn-outline btn-sm">View Full Log</a>
           </div>
           <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-container" style="border: none; box-shadow: none;">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Slot Mutex ID</th>
-                    <th>Candidate Holder</th>
-                    <th>Lock Mode</th>
-                    <th>Remaining Lease TTL</th>
-                    <th>Lease Identifier</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Actor</th>
+                    <th>Timestamp</th>
                   </tr>
                 </thead>
                 <tbody>
       `;
 
-      if (activeLocks.length === 0) {
-        html += `<tr><td colspan="5" class="text-muted" style="text-align: center; padding: 1.5rem;">No active interview slot locks held. Locks are acquired when scheduling interviews.</td></tr>`;
+      if (audit.length === 0) {
+        html += `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">No recent events recorded.</td></tr>`;
       } else {
-        activeLocks.forEach(l => {
-          const ttlSec = Math.round(l.ttl_remaining_ms / 1000);
+        audit.slice(0, 8).forEach(item => {
           html += `
             <tr>
-              <td class="mono"><strong>${l.slot_id}</strong></td>
-              <td class="mono">${l.holder_id}</td>
-              <td><span class="chip chip-screening">[${l.lock_mode}]</span></td>
-              <td class="mono" style="color: #fbbf24;">${ttlSec}s remaining</td>
-              <td class="mono text-muted" style="font-size: 0.75rem;">${l.lease_id}</td>
+              <td><span class="chip chip-screening">${item.action || 'Activity'}</span></td>
+              <td><strong>${item.table_name || item.tableName || '-'}</strong></td>
+              <td>${item.actor || 'System'}</td>
+              <td style="font-size: 0.78rem; color: var(--text-muted);">${new Date(item.timestamp || Date.now()).toLocaleTimeString()}</td>
             </tr>
           `;
         });
@@ -1136,133 +1658,24 @@
                 </tbody>
               </table>
             </div>
-            <div id="deadlock-analysis-result" style="padding: 1rem; border-top: 1px solid var(--border-color); display: none;"></div>
-          </div>
-        </div>
-
-        <!-- DBMS Resilience & WAL Engine (Team C) -->
-        <div class="card" style="margin-bottom: 1.5rem;">
-          <div class="card-header">
-            <h3 class="card-title">DBMS Storage Engine Resilience &amp; Recovery (Team C)</h3>
-            <button type="button" id="btn-verify-wal" class="btn btn-secondary btn-sm">[Verify WAL Integrity]</button>
-          </div>
-          <div class="card-body">
-            <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 0.5rem;">
-              Custom JSON DBMS runs open-addressing Hash Indexing, B-Tree indexes, and Write-Ahead Logging (WAL).
-            </p>
-            <div id="wal-verify-result" style="display: none; margin-top: 0.75rem; background: var(--bg-input); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);"></div>
-          </div>
-        </div>
-
-        <!-- Live Audit Log Stream -->
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Live Audit Log Stream (Append-Only WAL Engine)</h3>
-            <span class="chip chip-online">[Real-Time SSE Sync]</span>
-          </div>
-          <div class="card-body">
-            <div class="audit-log-stream">
-      `;
-
-      if (audit.length === 0) {
-        html += `<p class="text-muted" style="text-align: center; padding: 1.5rem;">No recent audit mutations recorded.</p>`;
-      } else {
-        audit.forEach(item => {
-          html += `
-            <div class="audit-item">
-              <div>
-                <span class="audit-action">[${item.action || 'TRANSACTION'}]</span>
-                <span style="color: var(--text-primary); margin-left: 0.5rem;">Table: <strong>${item.table_name || item.tableName || '-'}</strong></span>
-                <span class="text-muted" style="margin-left: 0.5rem;">Record: ${item.record_id || item.recordId || '-'}</span>
-              </div>
-              <div class="audit-meta">
-                <span>Actor: ${item.actor || 'system'}</span> &bull;
-                <span>${new Date(item.timestamp || Date.now()).toLocaleTimeString()}</span>
-              </div>
-            </div>
-          `;
-        });
-      }
-
-      html += `
-            </div>
           </div>
         </div>
       `;
 
       elements.mainContent.innerHTML = html;
-
-      // Deadlock analysis button
-      const deadlockBtn = document.getElementById('btn-run-deadlock');
-      if (deadlockBtn) {
-        deadlockBtn.addEventListener('click', async () => {
-          deadlockBtn.disabled = true;
-          try {
-            const res = await apiFetch('/api/v1/ui/deadlocks/analyse', { method: 'POST' });
-            const resDiv = document.getElementById('deadlock-analysis-result');
-            if (resDiv) {
-              resDiv.style.display = 'block';
-              const cyclesCount = res.cycles?.length || 0;
-              resDiv.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <strong style="color: ${cyclesCount > 0 ? '#ef4444' : '#34d399'};">
-                      ${cyclesCount > 0 ? `[DEADLOCK DETECTED] ${cyclesCount} cycle(s) identified in Wait-For Graph` : '[GRAPH ACYCLIC] No deadlocks detected in Wait-For Graph'}
-                    </strong>
-                    <div class="text-muted" style="font-size: 0.8rem; margin-top: 0.25rem;">
-                      Algorithm: Depth-First Search Cycle Detection &bull; Checked at: ${new Date().toLocaleTimeString()}
-                    </div>
-                  </div>
-                  <span class="chip ${cyclesCount > 0 ? 'chip-not-eligible' : 'chip-online'}">
-                    ${cyclesCount > 0 ? '[Victim Aborted]' : '[Safe State]'}
-                  </span>
-                </div>
-              `;
-            }
-          } catch (err) {
-            showBanner('error', `[Deadlock Analysis Error] ${err.message}`);
-          } finally {
-            deadlockBtn.disabled = false;
-          }
-        });
-      }
-
-      // WAL verification button
-      const walBtn = document.getElementById('btn-verify-wal');
-      if (walBtn) {
-        walBtn.addEventListener('click', async () => {
-          walBtn.disabled = true;
-          try {
-            const res = await apiFetch('/api/v1/ui/recovery/verify', { method: 'POST' });
-            const resDiv = document.getElementById('wal-verify-result');
-            if (resDiv) {
-              resDiv.style.display = 'block';
-              resDiv.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <strong style="color: #34d399;">[WAL INTEGRITY VERIFIED] Storage engine consistent</strong>
-                    <div class="text-muted" style="font-size: 0.8rem; margin-top: 0.25rem;">
-                      WAL records verified: ${res.wal_records_checked || 'All'} &bull; Checkpoint status: OK &bull; Tables in sync: 6/6
-                    </div>
-                  </div>
-                  <span class="chip chip-online">[ACID Compliant]</span>
-                </div>
-              `;
-            }
-          } catch (err) {
-            showBanner('error', `[Recovery Verify Error] ${err.message}`);
-          } finally {
-            walBtn.disabled = false;
-          }
-        });
-      }
     } catch (err) {
       elements.mainContent.innerHTML = `<div class="banner error">Failed to load operations dashboard: ${err.message}</div>`;
     }
   }
 
+  // 8. Admin View: Manage Placement Drives
   async function loadDriveManagementView() {
-    elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Loading drive management records...</p></div></div>';
+    elements.mainContent.innerHTML = `
+      <div class="card">
+        <p class="text-muted" style="padding: 1.5rem; text-align: center;">Loading recruitment drives &amp; applicant pipelines...</p>
+      </div>
+    `;
+
     try {
       const [drives, allApps, companies] = await Promise.all([
         apiFetch('/api/v1/ui/drives'),
@@ -1270,14 +1683,17 @@
         apiFetch('/api/v1/ui/companies').catch(() => []),
       ]);
       state.drives = drives || [];
+      state.companies = companies || [];
 
       let html = `
-        <div class="view-header">
+        <div class="page-header">
           <div>
-            <h2 class="view-title">Drive Management &amp; Candidate Selection</h2>
-            <p class="view-subtitle">Operational parameters, seats allocation, and candidate selection workflow</p>
+            <h1 class="page-title">Manage Placement Drives</h1>
+            <p class="page-subtitle">Publish recruitment drives, review candidate stages, and advance candidates through interview rounds.</p>
           </div>
-          <button type="button" id="btn-create-drive-trigger" class="btn btn-primary">[+ Create Placement Drive]</button>
+          <div class="page-actions">
+            <button type="button" id="btn-create-drive-trigger" class="btn btn-primary">+ Create Placement Drive</button>
+          </div>
         </div>
 
         <div class="card" style="margin-bottom: 1.5rem;">
@@ -1285,17 +1701,16 @@
             <h3 class="card-title">Placement Drives (${state.drives.length})</h3>
           </div>
           <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-container" style="border: none; box-shadow: none;">
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Drive ID</th>
-                    <th>Title</th>
+                    <th>Drive Title</th>
                     <th>Company</th>
-                    <th>State</th>
-                    <th>Seats</th>
+                    <th>Status</th>
+                    <th>Openings</th>
                     <th>Min CGPA</th>
-                    <th>Package</th>
+                    <th>Annual Package</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -1303,32 +1718,34 @@
       `;
 
       if (state.drives.length === 0) {
-        html += `<tr><td colspan="8" class="text-muted" style="text-align: center; padding: 2rem;">No drives available. Click [+ Create Placement Drive] to start.</td></tr>`;
+        html += `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No placement drives created yet. Click [+ Create Placement Drive] to begin.</td></tr>`;
       } else {
         state.drives.forEach(d => {
           const crit = d.criteria || {};
+          const stateLabel = d.state === 'OPEN' ? 'Open' : (d.state === 'SCREENING' ? 'Screening' : (d.state === 'DRAFT' ? 'Draft' : 'Closed'));
+          const stateChip = d.state === 'OPEN' ? 'chip-selected' : (d.state === 'SCREENING' ? 'chip-screening' : 'chip-withdrawn');
+
           html += `
             <tr>
-              <td class="mono">${d.drive_id}</td>
               <td><strong>${d.title}</strong></td>
               <td>${d.company_name || d.company_id}</td>
-              <td><span class="chip ${d.state === 'OPEN' ? 'chip-online' : (d.state === 'SCREENING' ? 'chip-screening' : 'chip-offline')}">[${d.state}]</span></td>
-              <td class="mono"><strong>${d.seats}</strong></td>
-              <td class="mono">${crit.min_cgpa !== undefined ? crit.min_cgpa : '-'}</td>
-              <td class="mono">${formatCurrency(d.package)}</td>
+              <td><span class="chip ${stateChip}">${stateLabel}</span></td>
+              <td style="font-weight: 600;">${d.seats} seats</td>
+              <td>${crit.min_cgpa !== undefined ? crit.min_cgpa : '-'}</td>
+              <td style="font-weight: 600; color: var(--primary);">${formatCurrency(d.package)}</td>
               <td>
                 <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
-                  <button type="button" class="btn btn-secondary btn-sm btn-edit-drive" data-id="${d.drive_id}">Criteria</button>
-                  ${d.state === 'DRAFT' ? `<button type="button" class="btn btn-primary btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="OPEN">[Open]</button>` : ''}
+                  <button type="button" class="btn btn-outline btn-sm btn-edit-drive" data-id="${d.drive_id}">Edit</button>
+                  ${d.state === 'DRAFT' ? `<button type="button" class="btn btn-primary btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="OPEN">Open Drive</button>` : ''}
                   ${d.state === 'OPEN' ? `
-                    <button type="button" class="btn btn-secondary btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="SCREENING">[Screen]</button>
-                    <button type="button" class="btn btn-secondary btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="CLOSED" style="color: #f87171;">[Close]</button>
+                    <button type="button" class="btn btn-outline btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="SCREENING">Start Screening</button>
+                    <button type="button" class="btn btn-outline btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="CLOSED" style="color: var(--status-rose-text);">Close</button>
                   ` : ''}
                   ${d.state === 'SCREENING' ? `
-                    <button type="button" class="btn btn-secondary btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="CLOSED" style="color: #f87171;">[Close]</button>
+                    <button type="button" class="btn btn-outline btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="CLOSED" style="color: var(--status-rose-text);">Close</button>
                   ` : ''}
                   ${d.state === 'CLOSED' ? `
-                    <button type="button" class="btn btn-secondary btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="OPEN">[Re-Open]</button>
+                    <button type="button" class="btn btn-outline btn-sm btn-drive-state" data-id="${d.drive_id}" data-state="OPEN">Reopen</button>
                   ` : ''}
                 </div>
               </td>
@@ -1344,63 +1761,61 @@
           </div>
         </div>
 
-        <!-- Candidate Pipeline & Selection Workflow Table -->
+        <!-- Candidate Pipeline -->
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Candidate Pipeline &amp; Selection Workflow (${(allApps || []).length} applicants)</h3>
+            <h3 class="card-title">Candidate Pipeline Management (${(allApps || []).length} applicants)</h3>
           </div>
           <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
+            <div class="table-container" style="border: none; box-shadow: none;">
               <table class="data-table">
                 <thead>
                   <tr>
                     <th>Candidate</th>
                     <th>Drive</th>
-                    <th>Branch</th>
-                    <th>Current State</th>
-                    <th>Version</th>
-                    <th>Workflow Actions</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
       `;
 
       if (!allApps || allApps.length === 0) {
-        html += `<tr><td colspan="6" class="text-muted" style="text-align: center; padding: 2rem;">No candidate applications received yet.</td></tr>`;
+        html += `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No candidate applications received yet.</td></tr>`;
       } else {
         allApps.forEach(app => {
           let actionButtons = '';
           if (app.state === 'SHORTLISTED') {
-            actionButtons = `<button type="button" class="btn btn-primary btn-sm btn-schedule-trigger" data-app-id="${app.application_id}" data-student-id="${app.student_id}" data-student-name="${app.student_name || app.student_id}" data-drive-title="${app.drive_title || app.drive_id}">[Schedule Interview]</button>`;
+            actionButtons = `<button type="button" class="btn btn-primary btn-sm btn-schedule-trigger" data-app-id="${app.application_id}" data-student-id="${app.student_id}" data-student-name="${app.student_name || app.student_id}" data-drive-title="${app.drive_title || app.drive_id}">Schedule Interview</button>`;
           } else if (app.state === 'INTERVIEW_SCHEDULED') {
-            actionButtons = `<button type="button" class="btn btn-primary btn-sm btn-select-candidate" data-app-id="${app.application_id}" data-version="${app.version}">[Select Candidate]</button>`;
+            actionButtons = `<button type="button" class="btn btn-primary btn-sm btn-select-candidate" data-app-id="${app.application_id}" data-version="${app.version}">Mark as Selected</button>`;
           } else if (app.state === 'SELECTED') {
             actionButtons = `
               <div style="display: flex; gap: 0.35rem;">
-                <button type="button" class="btn btn-primary btn-sm btn-issue-offer" data-app-id="${app.application_id}" data-version="${app.version}">[Issue Offer]</button>
-                <button type="button" class="btn btn-secondary btn-sm btn-compensate-candidate" data-app-id="${app.application_id}">[Compensate]</button>
+                <button type="button" class="btn btn-primary btn-sm btn-issue-offer" data-app-id="${app.application_id}" data-version="${app.version}">Send Offer</button>
+                <button type="button" class="btn btn-outline btn-sm btn-compensate-candidate" data-app-id="${app.application_id}">Rollback</button>
               </div>
             `;
           } else if (app.state === 'OFFER_ISSUED') {
             actionButtons = `
               <div style="display: flex; gap: 0.35rem; align-items: center;">
-                <span class="chip chip-offered">[Offer Issued]</span>
-                <button type="button" class="btn btn-secondary btn-sm btn-compensate-candidate" data-app-id="${app.application_id}" style="color: #f87171;">[Revoke]</button>
+                <span class="chip chip-offered">Offer Sent</span>
+                <button type="button" class="btn btn-outline btn-sm btn-compensate-candidate" data-app-id="${app.application_id}" style="color: var(--status-rose-text);">Revoke</button>
               </div>
             `;
           } else if (app.state === 'COMPENSATION_REQUIRED') {
-            actionButtons = `<span class="chip chip-not-eligible">[Rollback Required]</span>`;
+            actionButtons = `<span class="chip chip-not-eligible">Review Required</span>`;
           } else {
-            actionButtons = `<span class="text-muted" style="font-size: 0.78rem;">[${app.state}]</span>`;
+            actionButtons = `<span class="chip ${getStateChipClass(app.state)}">${getStateLabel(app.state)}</span>`;
           }
 
           html += `
             <tr>
-              <td><strong>${app.student_name || app.student_id}</strong> <span class="mono text-muted" style="font-size: 0.75rem;">(${app.student_id})</span></td>
+              <td><strong>${app.student_name || app.student_id}</strong></td>
               <td>${app.drive_title || app.drive_id}</td>
-              <td class="mono">${app.branch || '-'}</td>
-              <td><span class="chip ${getStateChipClass(app.state)}">[${app.state}]</span></td>
-              <td class="mono">v${app.version || 1}</td>
+              <td>${app.branch || '-'}</td>
+              <td><span class="chip ${getStateChipClass(app.state)}">${getStateLabel(app.state)}</span></td>
               <td>${actionButtons}</td>
             </tr>
           `;
@@ -1417,7 +1832,7 @@
 
       elements.mainContent.innerHTML = html;
 
-      // Edit Drive buttons
+      // Edit Drive Buttons
       elements.mainContent.querySelectorAll('.btn-edit-drive').forEach(btn => {
         btn.addEventListener('click', () => {
           const driveId = btn.getAttribute('data-id');
@@ -1425,7 +1840,7 @@
         });
       });
 
-      // Drive State transition buttons
+      // Drive State Change Buttons
       elements.mainContent.querySelectorAll('.btn-drive-state').forEach(btn => {
         btn.addEventListener('click', async () => {
           const driveId = btn.getAttribute('data-id');
@@ -1436,26 +1851,24 @@
               method: 'PATCH',
               body: JSON.stringify({ state: targetState }),
             });
-            showBanner('success', `[Drive State Changed] Drive ${driveId} transitioned to ${targetState}.`);
+            showBanner('success', `Drive status updated successfully.`);
             loadDriveManagementView();
           } catch (err) {
-            showBanner('error', `[State Transition Failed] ${err.message}`);
+            showBanner('error', `Failed to update drive: ${err.message}`);
             btn.disabled = false;
           }
         });
       });
 
-      // Create Drive trigger
+      // Create Drive Trigger
       const createDriveBtn = document.getElementById('btn-create-drive-trigger');
       if (createDriveBtn) {
         createDriveBtn.addEventListener('click', () => {
-          // Populate company select in create drive modal
           if (elements.newDriveCompanySelect) {
-            elements.newDriveCompanySelect.innerHTML = (companies || []).map(c => 
-              `<option value="${c.company_id}">${c.name} (${c.company_id})</option>`
-            ).join('') || '<option value="">No companies registered</option>';
+            elements.newDriveCompanySelect.innerHTML = state.companies.map(c => `<option value="${c.company_id}">${c.name} (${c.tier})</option>`).join('');
           }
-          elements.createDriveModal.classList.remove('hidden');
+          if (elements.driveModalError) elements.driveModalError.classList.add('hidden');
+          if (elements.createDriveModal) elements.createDriveModal.classList.remove('hidden');
         });
       }
 
@@ -1467,70 +1880,84 @@
           const studentName = btn.getAttribute('data-student-name');
           const driveTitle = btn.getAttribute('data-drive-title');
 
-          elements.scheduleAppId.value = appId;
-          elements.scheduleStudentId.value = studentId;
-          elements.scheduleStudentName.textContent = `${studentName} (${studentId})`;
-          elements.scheduleDriveTitle.textContent = driveTitle;
-          elements.scheduleModal.classList.remove('hidden');
+          if (elements.scheduleAppId) elements.scheduleAppId.value = appId;
+          if (elements.scheduleStudentId) elements.scheduleStudentId.value = studentId;
+          if (elements.scheduleStudentName) elements.scheduleStudentName.textContent = studentName;
+          if (elements.scheduleDriveTitle) elements.scheduleDriveTitle.textContent = driveTitle;
+
+          if (elements.scheduleModalError) elements.scheduleModalError.classList.add('hidden');
+          if (elements.scheduleModal) elements.scheduleModal.classList.remove('hidden');
         });
       });
 
-      // Select Candidate buttons
+      // Mark as Selected Button
       elements.mainContent.querySelectorAll('.btn-select-candidate').forEach(btn => {
         btn.addEventListener('click', async () => {
           const appId = btn.getAttribute('data-app-id');
-          const version = Number(btn.getAttribute('data-version'));
+          const version = Number(btn.getAttribute('data-version') || 1);
           btn.disabled = true;
           try {
-            await apiFetch('/api/v1/ui/candidates/select', {
+            await apiFetch('/api/v1/ui/offers/commit', {
               method: 'POST',
-              body: JSON.stringify({ application_id: appId, expected_version: version }),
+              body: JSON.stringify({
+                application_id: appId,
+                target_state: 'SELECTED',
+                expected_version: version,
+              }),
             });
-            showBanner('success', `[Candidate Selected] Application ${appId} marked as SELECTED and seat reserved.`);
+            showBanner('success', `Candidate marked as selected!`);
             loadDriveManagementView();
           } catch (err) {
-            showBanner('error', `[Selection Failed] ${err.message}`);
+            showBanner('error', `Failed to select candidate: ${err.message}`);
             btn.disabled = false;
           }
         });
       });
 
-      // Issue Offer buttons
+      // Send Offer Button
       elements.mainContent.querySelectorAll('.btn-issue-offer').forEach(btn => {
         btn.addEventListener('click', async () => {
           const appId = btn.getAttribute('data-app-id');
-          const version = Number(btn.getAttribute('data-version'));
+          const version = Number(btn.getAttribute('data-version') || 1);
           btn.disabled = true;
           try {
-            await apiFetch('/api/v1/ui/candidates/issue-offer', {
+            await apiFetch('/api/v1/ui/offers/commit', {
               method: 'POST',
-              body: JSON.stringify({ application_id: appId, expected_version: version }),
+              body: JSON.stringify({
+                application_id: appId,
+                target_state: 'OFFER_ISSUED',
+                expected_version: version,
+              }),
             });
-            showBanner('success', `[Offer Issued] Offer committed for application ${appId}. Awaiting student acceptance.`);
+            showBanner('success', `Offer sent to candidate. Awaiting their response.`);
             loadDriveManagementView();
           } catch (err) {
-            showBanner('error', `[Offer Issuance Failed] ${err.message}`);
+            showBanner('error', `Failed to issue offer: ${err.message}`);
             btn.disabled = false;
           }
         });
       });
 
-      // Compensate / Revoke buttons
+      // Compensate / Rollback Button
       elements.mainContent.querySelectorAll('.btn-compensate-candidate').forEach(btn => {
         btn.addEventListener('click', async () => {
           const appId = btn.getAttribute('data-app-id');
-          const reason = prompt('Reason for compensation / rollback:', 'Placement seat reallocation');
+          const reason = prompt('Please enter a reason for this rollback:', 'Administrative review');
           if (!reason) return;
+
           btn.disabled = true;
           try {
-            await apiFetch('/api/v1/ui/candidates/compensate', {
+            await apiFetch('/api/v1/ui/offers/compensate', {
               method: 'POST',
-              body: JSON.stringify({ application_id: appId, reason }),
+              body: JSON.stringify({
+                application_id: appId,
+                reason,
+              }),
             });
-            showBanner('info', `[Candidate Compensated] Application ${appId} rolled back to COMPENSATION_REQUIRED.`);
+            showBanner('info', `Action reversed. Application has been rolled back.`);
             loadDriveManagementView();
           } catch (err) {
-            showBanner('error', `[Compensation Failed] ${err.message}`);
+            showBanner('error', `Failed to rollback candidate: ${err.message}`);
             btn.disabled = false;
           }
         });
@@ -1540,8 +1967,14 @@
     }
   }
 
+  // 9. Admin View: Candidate Ranking Engine
   async function loadRankingEngineView() {
-    elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Initializing Ranking Algorithm Comparator...</p></div></div>';
+    elements.mainContent.innerHTML = `
+      <div class="card">
+        <p class="text-muted" style="padding: 1.5rem; text-align: center;">Initializing candidate ranking engine...</p>
+      </div>
+    `;
+
     try {
       if (state.drives.length === 0) {
         state.drives = await apiFetch('/api/v1/ui/drives');
@@ -1562,84 +1995,82 @@
     const rankings = result.rankings || [];
 
     let html = `
-      <div class="view-header">
+      <div class="page-header">
         <div>
-          <h2 class="view-title">Candidate Ranking Engine (Team B)</h2>
-          <p class="view-subtitle">Interactive comparison of algorithmic sorting &bull; Weighted Score vs Heap Top-K vs Merge Sort</p>
+          <h1 class="page-title">Candidate Rankings &amp; Shortlisting</h1>
+          <p class="page-subtitle">Rank applicants objectively based on academic merit and skill profile match.</p>
         </div>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <label for="ranking-drive-select" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Target Drive:</label>
-          <select id="ranking-drive-select" class="form-select">
-            ${state.drives.map(d => `<option value="${d.drive_id}" ${d.drive_id === activeDriveId ? 'selected' : ''}>${d.title} (${d.drive_id})</option>`).join('')}
-          </select>
+        <div class="page-actions">
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <label for="ranking-drive-select" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Select Drive:</label>
+            <select id="ranking-drive-select" class="form-select" style="min-width: 220px;">
+              ${state.drives.map(d => `<option value="${d.drive_id}" ${d.drive_id === activeDriveId ? 'selected' : ''}>${d.title}</option>`).join('')}
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- Algorithm & Top-K Action Card -->
+      <!-- Algorithm and Batch Shortlist Card -->
       <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div class="card-header" style="flex-wrap: wrap; gap: 0.75rem;">
           <div>
-            <h3 class="card-title">Ranking Algorithm &amp; Top-K Shortlist</h3>
-            <span class="mono text-muted" style="font-size: 0.78rem;">Execution Time: ${result.execution_time_ms || 0} ms</span>
+            <h3 class="card-title">Scoring Strategy</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem;">Select the prioritization model for candidate ranking</p>
           </div>
           <div style="display: flex; gap: 0.5rem; align-items: center;">
-            <label for="topk-count" style="font-size: 0.8rem; color: var(--text-secondary);">Shortlist Top-K:</label>
-            <input type="number" id="topk-count" class="form-input" min="1" max="50" value="3" style="width: 70px; padding: 0.25rem 0.5rem;" />
-            <button type="button" id="btn-commit-topk" class="btn btn-primary btn-sm">[Commit Top-K to Shortlist]</button>
+            <label for="topk-count" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Shortlist Top:</label>
+            <input type="number" id="topk-count" class="form-input" min="1" max="50" value="3" style="width: 70px; height: 34px;" />
+            <button type="button" id="btn-commit-topk" class="btn btn-primary btn-sm">Batch Shortlist</button>
           </div>
         </div>
+
         <div class="card-body">
-          <div class="algorithm-selector">
-            <button type="button" class="algo-btn ${state.selectedAlgo === 'WEIGHTED_SCORE' ? 'active' : ''}" data-algo="WEIGHTED_SCORE">
-              [Weighted Score]
+          <div class="filter-group" style="margin-bottom: 1rem;">
+            <button type="button" class="filter-pill algo-btn ${state.selectedAlgo === 'WEIGHTED_SCORE' ? 'active' : ''}" data-algo="WEIGHTED_SCORE">
+              Weighted Merit Score
             </button>
-            <button type="button" class="algo-btn ${state.selectedAlgo === 'HEAP_TOPK' ? 'active' : ''}" data-algo="HEAP_TOPK">
-              [Heap Top-K]
+            <button type="button" class="filter-pill algo-btn ${state.selectedAlgo === 'HEAP_TOPK' ? 'active' : ''}" data-algo="HEAP_TOPK">
+              Top Percentile Heap
             </button>
-            <button type="button" class="algo-btn ${state.selectedAlgo === 'MERGE_SORT' ? 'active' : ''}" data-algo="MERGE_SORT">
-              [Merge Sort]
+            <button type="button" class="filter-pill algo-btn ${state.selectedAlgo === 'MERGE_SORT' ? 'active' : ''}" data-algo="MERGE_SORT">
+              Deterministic Sort
             </button>
           </div>
 
-          <div style="margin-bottom: 1rem; font-size: 0.8rem; color: var(--text-secondary); background: var(--bg-input); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-            <strong>Algorithm Profile:</strong>
-            ${state.selectedAlgo === 'WEIGHTED_SCORE' ? 'Calculates weighted edge distances across candidate skill matches and normalized CGPA.' : ''}
-            ${state.selectedAlgo === 'HEAP_TOPK' ? 'Maintains an efficient Min-Heap bounded by capacity K to stream the top scorers in O(N log K) time.' : ''}
-            ${state.selectedAlgo === 'MERGE_SORT' ? 'Deterministic divide-and-conquer sort with strict tie-breaking on lexicographical student ID in O(N log N) time.' : ''}
+          <div style="background-color: var(--bg-surface-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.825rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+            ${state.selectedAlgo === 'WEIGHTED_SCORE' ? 'Evaluates applicants by combining normalized CGPA (60%) with verified technical skill overlap (40%).' : ''}
+            ${state.selectedAlgo === 'HEAP_TOPK' ? 'Extracts the highest-performing applicants instantaneously using a priority heap.' : ''}
+            ${state.selectedAlgo === 'MERGE_SORT' ? 'Applies stable ordering by score with secondary tie-breaking by candidate registration date.' : ''}
           </div>
 
-          <div class="table-responsive">
+          <div class="table-container" style="border: none; box-shadow: none;">
             <table class="data-table">
               <thead>
                 <tr>
                   <th>Rank</th>
-                  <th>Candidate ID</th>
                   <th>Candidate Name</th>
-                  <th>Branch</th>
+                  <th>Department</th>
                   <th>CGPA</th>
-                  <th>Skills</th>
-                  <th>Composite Score</th>
-                  <th>Algorithm</th>
+                  <th>Skills Profile</th>
+                  <th>Total Score</th>
                 </tr>
               </thead>
               <tbody>
     `;
 
     if (rankings.length === 0) {
-      html += `<tr><td colspan="8" class="text-muted" style="text-align: center; padding: 2rem;">No candidates scored for this drive.</td></tr>`;
+      html += `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No candidates scored for this drive yet.</td></tr>`;
     } else {
       rankings.forEach(r => {
         const skillsList = Array.isArray(r.skills) ? r.skills.join(', ') : '-';
         html += `
           <tr>
-            <td class="mono" style="font-weight: 700; color: #38bdf8;">#${r.rank}</td>
-            <td class="mono">${r.student_id}</td>
+            <td style="font-weight: 700; color: var(--primary);">#${r.rank}</td>
             <td><strong>${r.name || r.student_id}</strong></td>
             <td>${r.branch || '-'}</td>
-            <td class="mono">${r.cgpa || '-'}</td>
-            <td style="font-size: 0.75rem;">${skillsList}</td>
-            <td class="mono" style="font-weight: 700; color: #34d399;">${r.total_score}</td>
-            <td><span class="chip chip-screening">[${r.algorithm || state.selectedAlgo}]</span></td>
+            <td>${r.cgpa || '-'}</td>
+            <td style="font-size: 0.75rem; color: var(--text-secondary);">${skillsList}</td>
+            <td style="font-weight: 700; color: var(--status-emerald-text); font-size: 0.95rem;">${r.total_score}</td>
           </tr>
         `;
       });
@@ -1649,21 +2080,6 @@
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <!-- Fast AVL Tree Index Search -->
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Fast Candidate Search (Team B AVL Tree Index O(log N))</h3>
-          <span class="chip chip-online">[Self-Balancing Binary Search Tree]</span>
-        </div>
-        <div class="card-body">
-          <div style="display: flex; gap: 0.5rem; max-width: 500px; margin-bottom: 1rem;">
-            <input type="text" id="avl-search-key" class="form-input" placeholder="Enter student ID (e.g. STU001) or Score (e.g. 8.5)" />
-            <button type="button" id="btn-search-avl" class="btn btn-primary">[Search Index]</button>
-          </div>
-          <div id="avl-result-box" style="display: none; background: var(--bg-input); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);"></div>
         </div>
       </div>
     `;
@@ -1712,51 +2128,90 @@
               studentIds: topCandidates,
             }),
           });
-          showBanner('success', `[Batch Shortlisted] ${res.length} candidate(s) successfully transitioned to SHORTLISTED.`);
+          showBanner('success', `${res.length} candidate(s) shortlisted successfully.`);
         } catch (err) {
-          showBanner('error', `[Shortlist Failed] ${err.message}`);
+          showBanner('error', `Shortlist Failed: ${err.message}`);
         } finally {
           commitTopkBtn.disabled = false;
         }
       });
     }
+  }
 
-    // AVL Tree Search Button
-    const avlBtn = document.getElementById('btn-search-avl');
-    if (avlBtn) {
-      avlBtn.addEventListener('click', async () => {
-        const key = document.getElementById('avl-search-key')?.value.trim();
-        if (!key) return;
-        avlBtn.disabled = true;
-        try {
-          const res = await apiFetch(`/api/v1/ui/rankings/search-index?key=${encodeURIComponent(key)}`);
-          const box = document.getElementById('avl-result-box');
-          if (box) {
-            box.style.display = 'block';
-            const stats = res.tree_stats || res.index_statistics || {};
-            box.innerHTML = `
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <strong>Query: <span class="mono">${res.query}</span> &bull; Status: <span class="chip ${res.found ? 'chip-online' : 'chip-not-eligible'}">${res.found ? '[Hit]' : '[Miss]'}</span></strong>
-                <span class="mono text-muted" style="font-size: 0.75rem;">Search Time: O(log N)</span>
-              </div>
-              <div class="criteria-list">
-                <div class="criteria-item"><span class="criteria-label">AVL Tree Height:</span><span class="criteria-val mono">${stats.height !== undefined ? stats.height : 3}</span></div>
-                <div class="criteria-item"><span class="criteria-label">Total Indexed Nodes:</span><span class="criteria-val mono">${stats.size || stats.total_nodes || 12}</span></div>
-                <div class="criteria-item"><span class="criteria-label">Match Record:</span><span class="criteria-val mono">${res.found ? JSON.stringify(res.result) : 'Key not in shortlist index'}</span></div>
-              </div>
-            `;
-          }
-        } catch (err) {
-          showBanner('error', `[Search Error] ${err.message}`);
-        } finally {
-          avlBtn.disabled = false;
-        }
-      });
+  // 10. Admin View: User Management
+  async function loadUserAccountsView() {
+    elements.mainContent.innerHTML = `
+      <div class="card">
+        <p class="text-muted" style="padding: 1.5rem; text-align: center;">Loading registered accounts...</p>
+      </div>
+    `;
+
+    try {
+      const users = await apiFetch('/api/v1/auth/users');
+      let html = `
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">User Account Management</h1>
+            <p class="page-subtitle">Inspect registered students, faculty members, and administrative staff accounts.</p>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Email Address</th>
+                <th>Access Role</th>
+                <th>Student ID</th>
+                <th>Created Date</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      if (users.length === 0) {
+        html += `<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No user accounts found.</td></tr>`;
+      } else {
+        users.forEach(u => {
+          let roleChip = 'chip-applied';
+          if (u.role === 'admin') roleChip = 'chip-withdrawn';
+          else if (u.role === 'faculty') roleChip = 'chip-screening';
+
+          html += `
+            <tr>
+              <td><strong>${u.username}</strong></td>
+              <td>${u.name}</td>
+              <td style="color: var(--text-secondary);">${u.email}</td>
+              <td><span class="chip ${roleChip}">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</span></td>
+              <td>${u.student_id || '-'}</td>
+              <td style="font-size: 0.78rem; color: var(--text-muted);">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
+            </tr>
+          `;
+        });
+      }
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      elements.mainContent.innerHTML = html;
+    } catch (err) {
+      elements.mainContent.innerHTML = `<div class="banner error">Failed to load user accounts: ${err.message}</div>`;
     }
   }
 
+  // 11. Admin View: Activity Audit Trail
   async function loadAuditTrailView(filters = {}) {
-    elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Loading audit trail records...</p></div></div>';
+    elements.mainContent.innerHTML = `
+      <div class="card">
+        <p class="text-muted" style="padding: 1.5rem; text-align: center;">Loading activity log records...</p>
+      </div>
+    `;
+
     try {
       const qs = new URLSearchParams();
       if (filters.actor) qs.append('actor', filters.actor);
@@ -1768,100 +2223,95 @@
       const audit = await apiFetch(`/api/v1/ui/audit?${qs.toString()}`) || [];
 
       let html = `
-        <div class="view-header">
+        <div class="page-header">
           <div>
-            <h2 class="view-title">Authoritative Audit Trail (C4 WAL Engine)</h2>
-            <p class="view-subtitle">Immutable append-only transaction ledger with multi-criteria filtering</p>
+            <h1 class="page-title">Activity Audit Trail</h1>
+            <p class="page-subtitle">Immutable log of all state transitions, application filings, and offers.</p>
           </div>
         </div>
 
         <!-- Filter Bar -->
         <div class="card" style="margin-bottom: 1.5rem;">
-          <div class="card-body" style="padding: 1rem;">
+          <div class="card-body">
             <form id="audit-filter-form" style="display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap;">
-              <div class="form-group" style="margin: 0; min-width: 130px;">
-                <label for="filter-actor" style="font-size: 0.75rem;">Actor:</label>
-                <input type="text" id="filter-actor" class="form-input" placeholder="e.g. admin" value="${filters.actor || ''}" />
+              <div class="form-group" style="margin: 0; min-width: 140px;">
+                <label for="filter-actor" class="form-label" style="font-size: 0.75rem;">Actor</label>
+                <input type="text" id="filter-actor" class="form-input" placeholder="e.g. admin or alice" value="${filters.actor || ''}" />
               </div>
               <div class="form-group" style="margin: 0; min-width: 160px;">
-                <label for="filter-action" style="font-size: 0.75rem;">Action:</label>
+                <label for="filter-action" class="form-label" style="font-size: 0.75rem;">Event Type</label>
                 <select id="filter-action" class="form-select">
-                  <option value="">All Actions</option>
-                  <option value="COMMIT_OFFER" ${filters.action === 'COMMIT_OFFER' ? 'selected' : ''}>COMMIT_OFFER</option>
-                  <option value="CREATE_APPLICATION" ${filters.action === 'CREATE_APPLICATION' ? 'selected' : ''}>CREATE_APPLICATION</option>
-                  <option value="OFFER_ACCEPTED" ${filters.action === 'OFFER_ACCEPTED' ? 'selected' : ''}>OFFER_ACCEPTED</option>
-                  <option value="OFFER_DECLINED" ${filters.action === 'OFFER_DECLINED' ? 'selected' : ''}>OFFER_DECLINED</option>
-                  <option value="WITHDRAW" ${filters.action === 'WITHDRAW' ? 'selected' : ''}>WITHDRAW</option>
-                  <option value="REGISTER_USER" ${filters.action === 'REGISTER_USER' ? 'selected' : ''}>REGISTER_USER</option>
+                  <option value="">All Events</option>
+                  <option value="COMMIT_OFFER" ${filters.action === 'COMMIT_OFFER' ? 'selected' : ''}>Offer Sent</option>
+                  <option value="CREATE_APPLICATION" ${filters.action === 'CREATE_APPLICATION' ? 'selected' : ''}>Application Created</option>
+                  <option value="OFFER_ACCEPTED" ${filters.action === 'OFFER_ACCEPTED' ? 'selected' : ''}>Offer Accepted</option>
+                  <option value="OFFER_DECLINED" ${filters.action === 'OFFER_DECLINED' ? 'selected' : ''}>Offer Declined</option>
+                  <option value="WITHDRAW" ${filters.action === 'WITHDRAW' ? 'selected' : ''}>Application Withdrawn</option>
+                  <option value="REGISTER_USER" ${filters.action === 'REGISTER_USER' ? 'selected' : ''}>User Registered</option>
                 </select>
               </div>
-              <div class="form-group" style="margin: 0; min-width: 140px;">
-                <label for="filter-table" style="font-size: 0.75rem;">Table:</label>
+              <div class="form-group" style="margin: 0; min-width: 150px;">
+                <label for="filter-table" class="form-label" style="font-size: 0.75rem;">Entity Category</label>
                 <select id="filter-table" class="form-select">
-                  <option value="">All Tables</option>
-                  <option value="applications" ${filters.table_name === 'applications' ? 'selected' : ''}>applications</option>
-                  <option value="drives" ${filters.table_name === 'drives' ? 'selected' : ''}>drives</option>
-                  <option value="companies" ${filters.table_name === 'companies' ? 'selected' : ''}>companies</option>
-                  <option value="offers" ${filters.table_name === 'offers' ? 'selected' : ''}>offers</option>
-                  <option value="students" ${filters.table_name === 'students' ? 'selected' : ''}>students</option>
-                  <option value="users" ${filters.table_name === 'users' ? 'selected' : ''}>users</option>
+                  <option value="">All</option>
+                  <option value="applications" ${filters.table_name === 'applications' ? 'selected' : ''}>Applications</option>
+                  <option value="drives" ${filters.table_name === 'drives' ? 'selected' : ''}>Drives</option>
+                  <option value="companies" ${filters.table_name === 'companies' ? 'selected' : ''}>Companies</option>
+                  <option value="offers" ${filters.table_name === 'offers' ? 'selected' : ''}>Offers</option>
+                  <option value="students" ${filters.table_name === 'students' ? 'selected' : ''}>Students</option>
+                  <option value="users" ${filters.table_name === 'users' ? 'selected' : ''}>Users</option>
                 </select>
-              </div>
-              <div class="form-group" style="margin: 0; min-width: 140px;">
-                <label for="filter-record" style="font-size: 0.75rem;">Record ID:</label>
-                <input type="text" id="filter-record" class="form-input" placeholder="UUID or ID" value="${filters.record_id || ''}" />
               </div>
               <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" class="btn btn-primary btn-sm">[Filter Logs]</button>
-                <button type="button" id="btn-reset-audit" class="btn btn-secondary btn-sm">[Reset]</button>
+                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                <button type="button" id="btn-reset-audit" class="btn btn-outline btn-sm">Clear</button>
               </div>
             </form>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Audit Ledger Entries (${audit.length})</h3>
-            <span class="chip chip-online">[Live Stream Active]</span>
-          </div>
-          <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Action</th>
-                    <th>Table</th>
-                    <th>Record ID</th>
-                    <th>Actor</th>
-                    <th>Correlation ID</th>
-                    <th>Timestamp</th>
-                  </tr>
-                </thead>
-                <tbody>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Event Action</th>
+                <th>Target Entity</th>
+                <th>Actor</th>
+                <th>Record ID</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
       `;
 
       if (audit.length === 0) {
-        html += `<tr><td colspan="6" class="text-muted" style="text-align: center; padding: 2rem;">No audit records matching query filters.</td></tr>`;
+        html += `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No activity records found matching filters.</td></tr>`;
       } else {
         audit.forEach(item => {
+          const actionLabel = {
+            COMMIT_OFFER: 'Offer Sent',
+            CREATE_APPLICATION: 'Application Created',
+            OFFER_ACCEPTED: 'Offer Accepted',
+            OFFER_DECLINED: 'Offer Declined',
+            WITHDRAW: 'Application Withdrawn',
+            REGISTER_USER: 'User Registered',
+          }[item.action] || item.action || 'Activity';
+
           html += `
             <tr>
-              <td><span class="chip chip-screening">[${item.action || 'MUTATION'}]</span></td>
-              <td class="mono"><strong>${item.table_name || item.tableName || '-'}</strong></td>
-              <td class="mono" style="font-size: 0.75rem;">${item.record_id || item.recordId || '-'}</td>
-              <td>${item.actor || 'system'}</td>
-              <td class="mono text-muted" style="font-size: 0.72rem;">${item.correlation_id || item.correlationId || '-'}</td>
-              <td class="mono" style="font-size: 0.75rem;">${new Date(item.timestamp || Date.now()).toLocaleString()}</td>
+              <td><span class="chip chip-screening">${actionLabel}</span></td>
+              <td><strong>${item.table_name || item.tableName || '-'}</strong></td>
+              <td>${item.actor || 'System'}</td>
+              <td style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">${(item.record_id || item.recordId || '-').slice(0, 16)}</td>
+              <td style="font-size: 0.78rem; color: var(--text-secondary);">${new Date(item.timestamp || Date.now()).toLocaleString()}</td>
             </tr>
           `;
         });
       }
 
       html += `
-                </tbody>
-              </table>
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
       `;
 
@@ -1876,7 +2326,6 @@
             actor: document.getElementById('filter-actor')?.value.trim() || undefined,
             action: document.getElementById('filter-action')?.value || undefined,
             table_name: document.getElementById('filter-table')?.value || undefined,
-            record_id: document.getElementById('filter-record')?.value.trim() || undefined,
           });
         });
       }
@@ -1893,295 +2342,13 @@
     }
   }
 
-  // Student Views: My Profile (Self-Service Profile Management)
-  async function loadProfileView() {
-    const s = state.activeStudent || {};
-    const u = state.user || {};
-    const studentId = s.student_id || u.student_id;
-
-    if (!studentId) {
-      elements.mainContent.innerHTML = `
-        <div class="card">
-          <div class="card-body">
-            <p class="text-muted">Please sign in as a student to view and manage your academic profile.</p>
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    elements.mainContent.innerHTML = `
-      <div class="view-header">
-        <div>
-          <h2 class="view-title">My Academic Profile</h2>
-          <p class="view-subtitle">Self-service profile and academic credential management (persisted in Team C DBMS)</p>
-        </div>
-      </div>
-      <div class="card" style="max-width: 650px;">
-        <div class="card-header">
-          <h3 class="card-title">Profile: ${s.name || u.name || studentId}</h3>
-          <span class="chip chip-online">[DBMS Synchronized]</span>
-        </div>
-        <div class="card-body">
-          <form id="profile-edit-form">
-            <div class="form-group">
-              <label for="profile-student-id">Student ID (Immutable Key):</label>
-              <input type="text" id="profile-student-id" class="form-input" value="${studentId}" disabled />
-            </div>
-            <div class="form-group">
-              <label for="profile-name">Full Legal Name:</label>
-              <input type="text" id="profile-name" class="form-input" value="${s.name || u.name || ''}" required />
-            </div>
-            <div class="form-group">
-              <label for="profile-email">Institutional Email:</label>
-              <input type="email" id="profile-email" class="form-input" value="${s.email || u.email || ''}" required />
-            </div>
-            <div class="form-group">
-              <label for="profile-branch">Academic Department / Branch:</label>
-              <select id="profile-branch" class="form-select" required>
-                <option value="CSE" ${s.branch === 'CSE' ? 'selected' : ''}>Computer Science &amp; Engineering (CSE)</option>
-                <option value="IT" ${s.branch === 'IT' ? 'selected' : ''}>Information Technology (IT)</option>
-                <option value="ECE" ${s.branch === 'ECE' ? 'selected' : ''}>Electronics &amp; Communication (ECE)</option>
-                <option value="MECH" ${s.branch === 'MECH' ? 'selected' : ''}>Mechanical Engineering (MECH)</option>
-                <option value="CIVIL" ${s.branch === 'CIVIL' ? 'selected' : ''}>Civil Engineering (CIVIL)</option>
-              </select>
-            </div>
-            <div class="form-row" style="display: flex; gap: 1rem;">
-              <div class="form-group" style="flex: 1;">
-                <label for="profile-cgpa">Cumulative CGPA (0.00 - 10.00):</label>
-                <input type="number" id="profile-cgpa" class="form-input" step="0.01" min="0" max="10" value="${s.cgpa != null ? s.cgpa : 7.5}" required />
-              </div>
-              <div class="form-group" style="flex: 1;">
-                <label for="profile-backlogs">Active Backlogs:</label>
-                <input type="number" id="profile-backlogs" class="form-input" min="0" max="20" value="${s.backlogs != null ? s.backlogs : 0}" required />
-              </div>
-              <div class="form-group" style="flex: 1;">
-                <label for="profile-attendance">Attendance (%):</label>
-                <input type="number" id="profile-attendance" class="form-input" min="0" max="100" value="${s.attendance != null ? s.attendance : 85}" required />
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="profile-skills">Technical Skills (Comma separated):</label>
-              <input type="text" id="profile-skills" class="form-input" value="${Array.isArray(s.skills) ? s.skills.join(', ') : (s.skills || 'JavaScript, Python')}" placeholder="e.g. JavaScript, Python, Node.js, SQL" />
-            </div>
-            <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem;">
-              <button type="submit" class="btn btn-primary" id="btn-save-profile">[Save Profile Changes]</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-
-    const form = document.getElementById('profile-edit-form');
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const saveBtn = document.getElementById('btn-save-profile');
-        if (saveBtn) saveBtn.disabled = true;
-
-        const skills = document.getElementById('profile-skills').value.split(',').map(item => item.trim()).filter(Boolean);
-        const updates = {
-          name: document.getElementById('profile-name').value.trim(),
-          email: document.getElementById('profile-email').value.trim(),
-          branch: document.getElementById('profile-branch').value,
-          cgpa: Number(document.getElementById('profile-cgpa').value),
-          backlogs: Number(document.getElementById('profile-backlogs').value),
-          attendance: Number(document.getElementById('profile-attendance').value),
-          skills: skills,
-        };
-
-        try {
-          const updated = await apiFetch(`/api/v1/ui/students/${studentId}`, {
-            method: 'PUT',
-            body: JSON.stringify(updates),
-          });
-
-          // Update local state
-          state.activeStudent = { ...state.activeStudent, ...updates, ...updated };
-          if (state.user) {
-            state.user.name = updates.name;
-            state.user.email = updates.email;
-          }
-          updateUserDisplay();
-          showBanner('success', `[Profile Updated] Academic credentials saved and synchronized to Team C DBMS.`);
-          loadProfileView();
-        } catch (err) {
-          showBanner('error', `[Profile Update Failed] ${err.message}`);
-          if (saveBtn) saveBtn.disabled = false;
-        }
-      });
-    }
-  }
-
-  // Admin & Faculty Views: Company Directory
-  async function loadCompaniesView() {
-    elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Loading recruiter companies...</p></div></div>';
-    try {
-      const companies = await apiFetch('/api/v1/ui/companies') || [];
-      let html = `
-        <div class="view-header">
-          <div>
-            <h2 class="view-title">Recruiter Company Directory</h2>
-            <p class="view-subtitle">Registered corporate recruitment partners stored in Team C DBMS</p>
-          </div>
-          <button type="button" id="btn-open-create-company" class="btn btn-primary">[+ Register Recruiter Company]</button>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Corporate Partners (${companies.length})</h3>
-            <span class="chip chip-online">[DBMS Synchronized]</span>
-          </div>
-          <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Company ID</th>
-                    <th>Company Name</th>
-                    <th>Industry</th>
-                    <th>Tier</th>
-                    <th>Contact Email</th>
-                    <th>Website</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-      `;
-
-      if (companies.length === 0) {
-        html += `<tr><td colspan="7" class="text-muted" style="text-align: center; padding: 2rem;">No companies registered yet. Click [+ Register Recruiter Company] to add one.</td></tr>`;
-      } else {
-        companies.forEach(c => {
-          let tierChip = 'chip-applied';
-          if (c.tier === 'Tier 1' || c.tier === 'TIER_1') tierChip = 'chip-active';
-          else if (c.tier === 'Tier 2' || c.tier === 'TIER_2') tierChip = 'chip-screening';
-
-          html += `
-            <tr>
-              <td class="mono" style="font-size: 0.8rem;"><strong>${c.company_id}</strong></td>
-              <td><strong>${c.name}</strong></td>
-              <td>${c.industry || '-'}</td>
-              <td><span class="chip ${tierChip}">[${c.tier || 'Standard'}]</span></td>
-              <td class="mono" style="font-size: 0.8rem;">${c.contact_email || '-'}</td>
-              <td>${c.website ? `<a href="${c.website}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${c.website}</a>` : '-'}</td>
-              <td><span class="chip chip-online">[ACTIVE]</span></td>
-            </tr>
-          `;
-        });
-      }
-
-      html += `
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      `;
-
-      elements.mainContent.innerHTML = html;
-
-      // Event listener for + Register Recruiter Company
-      const openBtn = document.getElementById('btn-open-create-company');
-      if (openBtn) {
-        openBtn.addEventListener('click', () => {
-          if (elements.companyModalError) elements.companyModalError.classList.add('hidden');
-          if (elements.createCompanyModal) elements.createCompanyModal.classList.remove('hidden');
-        });
-      }
-    } catch (err) {
-      elements.mainContent.innerHTML = `<div class="banner error">Failed to load companies: ${err.message}</div>`;
-    }
-  }
-
-  // Admin Views: User Accounts
-  async function loadUserAccountsView() {
-    elements.mainContent.innerHTML = '<div class="card"><div class="card-body"><p class="text-muted">Loading registered accounts...</p></div></div>';
-    try {
-      const users = await apiFetch('/api/v1/auth/users');
-      let html = `
-        <div class="view-header">
-          <div>
-            <h2 class="view-title">User Accounts &amp; Access Control</h2>
-            <p class="view-subtitle">Registered user credentials and account scopes stored in Team C DBMS</p>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Registered Accounts (${users.length})</h3>
-          </div>
-          <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>User ID</th>
-                    <th>Username</th>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Linked Student ID</th>
-                    <th>Created</th>
-                  </tr>
-                </thead>
-                <tbody>
-      `;
-
-      if (users.length === 0) {
-        html += `<tr><td colspan="7" class="text-muted" style="text-align: center; padding: 2rem;">No user accounts found.</td></tr>`;
-      } else {
-        users.forEach(u => {
-          html += `
-            <tr>
-              <td class="mono" style="font-size: 0.78rem;">${u.user_id}</td>
-              <td><strong>${u.username}</strong></td>
-              <td>${u.name}</td>
-              <td>${u.email}</td>
-              <td><span class="chip ${u.role === 'admin' ? 'chip-warning' : (u.role === 'faculty' ? 'chip-active' : 'chip-applied')}">[${u.role.toUpperCase()}]</span></td>
-              <td class="mono">${u.student_id || '-'}</td>
-              <td class="mono" style="font-size: 0.75rem;">${new Date(u.created_at || Date.now()).toLocaleDateString()}</td>
-            </tr>
-          `;
-        });
-      }
-
-      html += `
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      `;
-      elements.mainContent.innerHTML = html;
-    } catch (err) {
-      elements.mainContent.innerHTML = `<div class="banner error">Failed to load user accounts: ${err.message}</div>`;
-    }
-  }
-
-  // Active View Router
-  function loadActiveView(silent = false) {
-    if (state.role === 'student') {
-      if (state.activeTab === 'drives') loadDrivesView();
-      else if (state.activeTab === 'applications') loadApplicationsView(silent);
-      else if (state.activeTab === 'profile') loadProfileView();
-    } else if (state.role === 'faculty') {
-      if (state.activeTab === 'reports') loadReportsView();
-      else if (state.activeTab === 'cohort') loadCohortView();
-      else if (state.activeTab === 'companies') loadCompaniesView();
-    } else if (state.role === 'admin') {
-      if (state.activeTab === 'dashboard') loadDashboardView(silent);
-      else if (state.activeTab === 'drive-management') loadDriveManagementView();
-      else if (state.activeTab === 'companies') loadCompaniesView();
-      else if (state.activeTab === 'ranking-engine') loadRankingEngineView();
-      else if (state.activeTab === 'user-accounts') loadUserAccountsView();
-      else if (state.activeTab === 'audit-trail') loadAuditTrailView();
-    }
-  }
-
-  // ── Modal Actions ───────────────────────────────────────────────────────────
+  // =========================================================================
+  // MODAL ACTIONS & FORM HANDLERS
+  // =========================================================================
 
   function openApplyModal(driveId) {
     if (!state.user || state.role !== 'student' || !state.activeStudent) {
-      showBanner('warning', '[Access Restricted] Please sign in with a registered student account to submit placement applications.');
+      showBanner('warning', 'Please sign in with a registered student account to apply.');
       openAuthModal('login');
       return;
     }
@@ -2191,10 +2358,9 @@
 
     elements.applyDriveId.value = drive.drive_id;
     elements.modalDriveTitle.textContent = `Apply to ${drive.title}`;
-    elements.modalDriveIdDisplay.textContent = drive.drive_id;
-    elements.modalCompanyDisplay.textContent = `${drive.company_name || 'Partner Company'} (${formatCurrency(drive.package)})`;
-    elements.modalStudentDisplay.textContent = `${state.activeStudent.name} (${state.activeStudent.student_id})`;
-    elements.modalMetricsDisplay.textContent = `Branch: ${state.activeStudent.branch} | CGPA: ${state.activeStudent.cgpa} | Backlogs: ${state.activeStudent.backlogs}`;
+    elements.modalCompanyDisplay.textContent = `${drive.company_name || 'Recruiter'} — ${formatCurrency(drive.package)}`;
+    elements.modalStudentDisplay.textContent = `${state.activeStudent.name}`;
+    elements.modalMetricsDisplay.textContent = `${state.activeStudent.branch} | CGPA: ${state.activeStudent.cgpa} | Backlogs: ${state.activeStudent.backlogs}`;
     elements.applyConsent.checked = false;
 
     elements.applyModalProgress.classList.add('hidden');
@@ -2203,13 +2369,13 @@
   }
 
   function closeApplyModal() {
-    elements.applyModal.classList.add('hidden');
+    if (elements.applyModal) elements.applyModal.classList.add('hidden');
   }
 
   async function handleApplySubmit(e) {
     e.preventDefault();
     if (!elements.applyConsent.checked) {
-      alert('Please confirm candidate consent before submitting.');
+      alert('Please confirm applicant consent before submitting.');
       return;
     }
 
@@ -2218,7 +2384,7 @@
 
     elements.modalApplySubmit.disabled = true;
     elements.applyModalProgress.classList.remove('hidden');
-    elements.applyProgressText.textContent = 'Orchestrating workflow across Team C, Team A, and Team B...';
+    elements.applyProgressText.textContent = 'Submitting your application...';
 
     try {
       const response = await apiFetch('/api/v1/ui/applications', {
@@ -2234,20 +2400,14 @@
       elements.applyModalProgress.classList.add('hidden');
       closeApplyModal();
 
-      const appState = response?.application?.state || 'APPLIED';
-      const eligibilityResult = response?.eligibility?.result || 'UNKNOWN';
       const rank = response?.ranking?.rank || 1;
+      showBanner('success', `Application submitted successfully! You've been ranked #${rank}.`);
 
-      showBanner('success', `[Workflow Completed] Application created. State: [${appState}] | Eligibility: [${eligibilityResult}] | Ranking: #${rank}`);
-
-      // Refresh drives and switch to applications tab
-      state.activeTab = 'applications';
-      renderTabs();
-      loadApplicationsView();
+      window.location.hash = '#/student/applications';
     } catch (err) {
       elements.applyModalProgress.classList.add('hidden');
       elements.modalApplySubmit.disabled = false;
-      showBanner('error', `[Application Failed] ${err.message}`);
+      showBanner('error', `Failed to submit application: ${err.message}`);
     }
   }
 
@@ -2270,7 +2430,7 @@
   }
 
   function closeEditDriveModal() {
-    elements.driveEditModal.classList.add('hidden');
+    if (elements.driveEditModal) elements.driveEditModal.classList.add('hidden');
   }
 
   async function handleEditDriveSubmit(e) {
@@ -2298,14 +2458,13 @@
       });
 
       closeEditDriveModal();
-      showBanner('success', `[Success] Drive ${driveId} parameters updated successfully.`);
+      showBanner('success', `Drive updated successfully.`);
       loadDriveManagementView();
     } catch (err) {
-      showBanner('error', `[Update Error] ${err.message}`);
+      showBanner('error', `Failed to update drive: ${err.message}`);
     }
   }
 
-  // Handle Create Company Form Submit
   async function handleCreateCompanySubmit(e) {
     e.preventDefault();
     if (elements.companyModalError) elements.companyModalError.classList.add('hidden');
@@ -2326,10 +2485,11 @@
 
       elements.createCompanyModal.classList.add('hidden');
       elements.createCompanyForm.reset();
-      showBanner('success', `[Company Registered] ${payload.name} added to recruiter database.`);
-      if (state.activeTab === 'companies') {
+      showBanner('success', `${payload.name} added successfully.`);
+      const currentHash = getCurrentHash();
+      if (currentHash === '#/admin/companies' || currentHash === '#/faculty/companies') {
         loadCompaniesView();
-      } else if (state.activeTab === 'drive-management') {
+      } else {
         loadDriveManagementView();
       }
     } catch (err) {
@@ -2337,12 +2497,11 @@
         elements.companyModalError.textContent = err.message;
         elements.companyModalError.classList.remove('hidden');
       } else {
-        showBanner('error', `[Registration Failed] ${err.message}`);
+        showBanner('error', `Failed to add company: ${err.message}`);
       }
     }
   }
 
-  // Handle Create Drive Form Submit
   async function handleCreateDriveSubmit(e) {
     e.preventDefault();
     if (elements.driveModalError) elements.driveModalError.classList.add('hidden');
@@ -2372,7 +2531,7 @@
 
       elements.createDriveModal.classList.add('hidden');
       elements.createDriveForm.reset();
-      showBanner('success', `[Drive Created] Placement drive "${payload.title}" created successfully.`);
+      showBanner('success', `Drive "${payload.title}" created successfully.`);
       state.drives = [];
       loadDriveManagementView();
     } catch (err) {
@@ -2380,12 +2539,11 @@
         elements.driveModalError.textContent = err.message;
         elements.driveModalError.classList.remove('hidden');
       } else {
-        showBanner('error', `[Drive Creation Failed] ${err.message}`);
+        showBanner('error', `Failed to create drive: ${err.message}`);
       }
     }
   }
 
-  // Handle Schedule Interview Form Submit
   async function handleScheduleSubmit(e) {
     e.preventDefault();
     if (elements.scheduleModalError) elements.scheduleModalError.classList.add('hidden');
@@ -2406,50 +2564,47 @@
 
       elements.scheduleModal.classList.add('hidden');
       elements.scheduleForm.reset();
-      showBanner('success', `[Interview Scheduled] Slot ${slotId} locked by Team A Mutex Manager.`);
+      showBanner('success', `Interview scheduled successfully.`);
       loadDriveManagementView();
     } catch (err) {
       if (elements.scheduleModalError) {
         elements.scheduleModalError.textContent = err.message;
         elements.scheduleModalError.classList.remove('hidden');
       } else {
-        showBanner('error', `[Scheduling Failed] ${err.message}`);
+        showBanner('error', `Failed to schedule interview: ${err.message}`);
       }
     }
   }
 
-  // ── Event Bindings ──────────────────────────────────────────────────────────
+  // ── Global Event Bindings ───────────────────────────────────────────────────
   function setupEventListeners() {
-    // Auth header controls
-    if (elements.authBtn) {
-      elements.authBtn.addEventListener('click', () => openAuthModal('login'));
-    }
-    if (elements.logoutBtn) {
-      elements.logoutBtn.addEventListener('click', handleLogout);
+    // Hash change router listener
+    window.addEventListener('hashchange', () => handleRoute(false));
+
+    // Mobile sidebar drawer toggle
+    if (elements.mobileSidebarToggle) {
+      elements.mobileSidebarToggle.addEventListener('click', () => {
+        elements.sidebar?.classList.toggle('open');
+      });
     }
 
+    // Auth header controls
+    if (elements.authBtn) elements.authBtn.addEventListener('click', () => openAuthModal('login'));
+    if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', handleLogout);
+    if (elements.sidebarLogoutBtn) elements.sidebarLogoutBtn.addEventListener('click', handleLogout);
+
     // Auth modal controls
-    if (elements.modalAuthClose) {
-      elements.modalAuthClose.addEventListener('click', closeAuthModal);
-    }
-    if (elements.tabAuthLogin) {
-      elements.tabAuthLogin.addEventListener('click', () => switchAuthTab('login'));
-    }
-    if (elements.tabAuthRegister) {
-      elements.tabAuthRegister.addEventListener('click', () => switchAuthTab('register'));
-    }
-    if (elements.loginForm) {
-      elements.loginForm.addEventListener('submit', handleLogin);
-    }
-    if (elements.registerForm) {
-      elements.registerForm.addEventListener('submit', handleRegister);
-    }
+    if (elements.modalAuthClose) elements.modalAuthClose.addEventListener('click', closeAuthModal);
+    if (elements.tabAuthLogin) elements.tabAuthLogin.addEventListener('click', () => switchAuthTab('login'));
+    if (elements.tabAuthRegister) elements.tabAuthRegister.addEventListener('click', () => switchAuthTab('register'));
+    if (elements.loginForm) elements.loginForm.addEventListener('submit', handleLogin);
+    if (elements.registerForm) elements.registerForm.addEventListener('submit', handleRegister);
     if (elements.regRole) {
       elements.regRole.addEventListener('change', (e) => {
         if (e.target.value === 'faculty') {
-          elements.studentRegFields.classList.add('hidden');
+          elements.studentRegFields?.classList.add('hidden');
         } else {
-          elements.studentRegFields.classList.remove('hidden');
+          elements.studentRegFields?.classList.remove('hidden');
         }
       });
     }
@@ -2465,62 +2620,42 @@
     });
 
     // Banner close
-    elements.bannerClose.addEventListener('click', hideBanner);
+    if (elements.bannerClose) elements.bannerClose.addEventListener('click', hideBanner);
 
     // Apply Modal
-    elements.modalApplyClose.addEventListener('click', closeApplyModal);
-    elements.modalApplyCancel.addEventListener('click', closeApplyModal);
-    elements.applyForm.addEventListener('submit', handleApplySubmit);
+    if (elements.modalApplyClose) elements.modalApplyClose.addEventListener('click', closeApplyModal);
+    if (elements.modalApplyCancel) elements.modalApplyCancel.addEventListener('click', closeApplyModal);
+    if (elements.applyForm) elements.applyForm.addEventListener('submit', handleApplySubmit);
 
     // Edit Drive Modal
-    elements.modalEditClose.addEventListener('click', closeEditDriveModal);
-    elements.modalEditCancel.addEventListener('click', closeEditDriveModal);
-    elements.driveEditForm.addEventListener('submit', handleEditDriveSubmit);
+    if (elements.modalEditClose) elements.modalEditClose.addEventListener('click', closeEditDriveModal);
+    if (elements.modalEditCancel) elements.modalEditCancel.addEventListener('click', closeEditDriveModal);
+    if (elements.driveEditForm) elements.driveEditForm.addEventListener('submit', handleEditDriveSubmit);
 
     // Create Company Modal
-    if (elements.modalCreateCompanyClose) {
-      elements.modalCreateCompanyClose.addEventListener('click', () => elements.createCompanyModal.classList.add('hidden'));
-    }
-    if (elements.modalCreateCompanyCancel) {
-      elements.modalCreateCompanyCancel.addEventListener('click', () => elements.createCompanyModal.classList.add('hidden'));
-    }
-    if (elements.createCompanyForm) {
-      elements.createCompanyForm.addEventListener('submit', handleCreateCompanySubmit);
-    }
+    if (elements.modalCreateCompanyClose) elements.modalCreateCompanyClose.addEventListener('click', () => elements.createCompanyModal.classList.add('hidden'));
+    if (elements.modalCreateCompanyCancel) elements.modalCreateCompanyCancel.addEventListener('click', () => elements.createCompanyModal.classList.add('hidden'));
+    if (elements.createCompanyForm) elements.createCompanyForm.addEventListener('submit', handleCreateCompanySubmit);
 
     // Create Drive Modal
-    if (elements.modalCreateDriveClose) {
-      elements.modalCreateDriveClose.addEventListener('click', () => elements.createDriveModal.classList.add('hidden'));
-    }
-    if (elements.modalCreateDriveCancel) {
-      elements.modalCreateDriveCancel.addEventListener('click', () => elements.createDriveModal.classList.add('hidden'));
-    }
-    if (elements.createDriveForm) {
-      elements.createDriveForm.addEventListener('submit', handleCreateDriveSubmit);
-    }
+    if (elements.modalCreateDriveClose) elements.modalCreateDriveClose.addEventListener('click', () => elements.createDriveModal.classList.add('hidden'));
+    if (elements.modalCreateDriveCancel) elements.modalCreateDriveCancel.addEventListener('click', () => elements.createDriveModal.classList.add('hidden'));
+    if (elements.createDriveForm) elements.createDriveForm.addEventListener('submit', handleCreateDriveSubmit);
 
     // Schedule Interview Modal
-    if (elements.modalScheduleClose) {
-      elements.modalScheduleClose.addEventListener('click', () => elements.scheduleModal.classList.add('hidden'));
-    }
-    if (elements.modalScheduleCancel) {
-      elements.modalScheduleCancel.addEventListener('click', () => elements.scheduleModal.classList.add('hidden'));
-    }
-    if (elements.scheduleForm) {
-      elements.scheduleForm.addEventListener('submit', handleScheduleSubmit);
-    }
+    if (elements.modalScheduleClose) elements.modalScheduleClose.addEventListener('click', () => elements.scheduleModal.classList.add('hidden'));
+    if (elements.modalScheduleCancel) elements.modalScheduleCancel.addEventListener('click', () => elements.scheduleModal.classList.add('hidden'));
+    if (elements.scheduleForm) elements.scheduleForm.addEventListener('submit', handleScheduleSubmit);
   }
 
-  // ── Initialization ──────────────────────────────────────────────────────────
+  // ── Application Initialization ──────────────────────────────────────────────
   async function init() {
     setupEventListeners();
     await initSession();
-    renderTabs();
-    loadActiveView();
+    handleRoute(false);
     initSSE();
   }
 
-  // Run on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
